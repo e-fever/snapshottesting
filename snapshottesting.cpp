@@ -543,6 +543,10 @@ QVariantMap SnapshotTesting::loadStoredSnapshots()
     }
 
     QVariantMap result;
+    if (!QFile::exists(m_snapshotFile)) {
+        return result;
+    }
+
     QString content = QtShell::cat(m_snapshotFile);
 
     if (content.isNull()) {
@@ -662,7 +666,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
     if (SnapshotTesting::interactiveEnabled() && !SnapshotTesting::ignoreAll()) {
         QQmlApplicationEngine engine;
         engine.addImportPath("qrc:///");
-        engine.load(QUrl("qrc:/SnapshotTesting/Matcher.qml"));
+        engine.load(QUrl("qrc:///qt-project.org/imports/SnapshotTesting/Matcher.qml"));
 
         QObject* dialog = engine.rootObjects()[0];
         Q_ASSERT(dialog);
@@ -696,9 +700,9 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
 }
 
 static void init() {
-    m_snapshotFile = QtShell::realpath_strip(QtShell::pwd() + "snapshots.json");
+    m_snapshotFile = QtShell::realpath_strip(QtShell::pwd(), "snapshots.json");
 
-    QString text = QtShell::cat(":/SnapshotTesting/config/snapshot-config.json");
+    QString text = QtShell::cat(":/qt-project.org/imports/SnapshotTesting/config/snapshot-config.json");
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8(),&error);

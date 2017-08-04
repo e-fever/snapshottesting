@@ -15,6 +15,7 @@
     "fingerprint": ""
   },
   "dependencies": [
+    "com.github.benlau.qtshell@0.4.3"
   ],
   "license": "APACHE_2_0",
   "pri_filename": "snapshottesting.pri",

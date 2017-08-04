@@ -1,7 +1,7 @@
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
-QT       += qml-private qml
+QT       += qml-private qml quick
 
 RESOURCES += \
     $$PWD/snapshottesting.qrc

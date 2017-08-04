@@ -21,7 +21,7 @@ SnapshotTests::SnapshotTests(QObject *parent) : QObject(parent)
 void SnapshotTests::test_Snapshot()
 {
     {
-        QString text = QtShell::cat(":/SnapshotTesting/config/snapshot-config.json");
+        QString text = QtShell::cat(":/qt-project.org/imports/SnapshotTesting/config/snapshot-config.json");
 
         QJsonParseError error;
         QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8(),&error);
