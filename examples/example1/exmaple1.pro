@@ -6,7 +6,8 @@ DEFINES += QUICK_TEST_SOURCE_DIR=\\\"$$PWD/\\\"
 
 DISTFILES += \
     tst_demo1.qml \
-    README.md
+    README.md \
+    CustomItem.qml
 
 include(../../snapshottesting.pri)
 

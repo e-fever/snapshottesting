@@ -18,7 +18,7 @@ Item {
     }
 
     onSnapshotsFileChanged: {
-        if (Adapter.snapshotsFile != snapshotTesting.snapshotsFile) {
+        if (Adapter.snapshotsFile !== snapshotTesting.snapshotsFile) {
             Adapter.snapshotsFile = snapshotTesting.snapshotsFile;
         }
     }
