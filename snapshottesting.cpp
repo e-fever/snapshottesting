@@ -469,8 +469,9 @@ static QString prettyText(QVariantMap snapshot) {
             for (int i = 0 ; i < children.size() ;i++) {
                 QVariantMap data = children[i].toMap();
                 QString line = _prettyText(data, indent);
-                if (!line.isEmpty())
-                    lines << line;
+                if (!line.isEmpty()) {
+                    lines << "" << line;
+                }
             }
             return lines.join("\n");
         }
@@ -511,8 +512,9 @@ static QString prettyText(QVariantMap snapshot) {
         for (int i = 0 ; i < children.size() ;i++) {
             QVariantMap data = children[i].toMap();
             QString line = _prettyText(data, currentIndent);
-            if (!line.isEmpty())
-                lines << line;
+            if (!line.isEmpty()) {
+                lines << "" << line;
+            }
         }
 
         lines << QString().fill(' ',indent) +  QString("}");
