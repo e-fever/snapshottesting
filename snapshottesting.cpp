@@ -43,14 +43,53 @@ static QMap<QString, QStringList> ignoreListMap;
 #define DEHYDRATE_FONT(dest, property, original, current, field) \
     if (original.field() != current.field()) { \
         dest[property + "." + #field] = current.field(); \
-    } \
+    }
+
+static bool inherited(QObject *object, QString className) {
+    bool res = false;
+
+    const QMetaObject *metaObject = object->metaObject();
+
+    while (metaObject) {
+        if (metaObject->className() == className) {
+            res = true;
+            break;
+        }
+        metaObject = metaObject->superClass();
+    }
+
+    return res;
+}
 
 static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& options) {
     QString topLevelContextName;
-    QUrl topLevelBaseUrl;
-    QQmlContext* topLevelContext = qmlContext(source);
     bool captureVisibleItemOnly = options.captureVisibleItemOnly;
     bool expandAll = options.expandAll;
+    QList<QQmlContext*> topLevelContexts;
+    QList<QUrl> topLevelBaseUrlList;
+
+    auto obtainInnerContext = [=](QObject * object) {
+        QQmlContext* result = 0;
+        QQmlData *ddata = QQmlData::get(object, false);
+        if (ddata && ddata->context) {
+            // obtain the inner context name
+            result  = ddata->context->asQQmlContext();
+        }
+        return result;
+    };
+
+    {
+        QQmlContext* context = qmlContext(source);
+        if (context) {
+            topLevelContexts << context;
+            topLevelBaseUrlList<< context->baseUrl();
+        }
+        context = obtainInnerContext(source);
+        if (context) {
+            topLevelContexts << context;
+            topLevelBaseUrlList<< context->baseUrl();
+        }
+    }
 
     auto obtainContextName = [=](QObject *object) {
         QString result;
@@ -70,15 +109,12 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     };
 
     topLevelContextName = obtainContextName(source);
-    if (topLevelContext) {
-        topLevelBaseUrl = topLevelContext->baseUrl();
-    }
 
     auto obtainId = [=](QObject* object) -> QString {
-        if (!topLevelContext) {
+        if (topLevelContexts.size() == 0) {
             return "";
         }
-        QString res = topLevelContext->nameForObject(object);
+        QString res = topLevelContexts.first()->nameForObject(object);
         if (res.isEmpty()) {
             QQmlContext* context = qmlContext(object);
             if (context) {
@@ -277,22 +313,6 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         return dest;
     };
 
-    auto inherited = [=](QObject *object, QString className) {
-        bool res = false;
-
-        const QMetaObject *metaObject = object->metaObject();
-
-        while (metaObject) {
-            if (metaObject->className() == className) {
-                res = true;
-                break;
-            }
-            metaObject = metaObject->superClass();
-        }
-
-        return res;
-    };
-
     auto isVisible = [=](QObject* object) {
         QQuickItem* item = qobject_cast<QQuickItem*>(object);
 
@@ -308,7 +328,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         return true;
     };
 
-    auto _allowTravel = [=](QObject* object) {
+    auto allowTravel = [=](QObject* object) {
         if (!captureVisibleItemOnly) {
             return true;
         }
@@ -319,7 +339,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     std::function<QVariantMap(QObject*)> travel;
 
     travel = [=, &travel](QObject* object) {
-        if (!_allowTravel(object)) {
+        if (!allowTravel(object)) {
             return QVariantMap();
         }
 
@@ -379,7 +399,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             baseUrl = context->baseUrl();
         }
 
-        if (!expandAll && baseUrl != topLevelBaseUrl) {
+        if (!expandAll && topLevelBaseUrlList.indexOf(baseUrl) < 0) {
             dest["$skip"] = true;
         }
 
