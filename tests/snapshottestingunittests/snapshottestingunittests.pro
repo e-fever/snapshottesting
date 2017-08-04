@@ -24,7 +24,8 @@ DISTFILES +=     qpm.json     \
     sample/Sample2.qml \
     sample/Sample3.qml \
     sample/Sample4.qml \
-    qmltests/tst_SnapshotTesting.qml
+    qmltests/tst_SnapshotTesting.qml \
+    snapshots.json
 
 HEADERS += \    
     snapshottests.h

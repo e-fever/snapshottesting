@@ -18,6 +18,7 @@ Item {
         function test_capture() {
             var snapshot = SnapshotTesting.capture(item1);
             console.log(snapshot);
+            snapshot = snapshot.replace(Qt.resolvedUrl(".."), "");
             SnapshotTesting.matchStoredSnapshot("test_capture", snapshot);
         }
 
