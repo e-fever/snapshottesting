@@ -6,7 +6,8 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-SOURCES +=     main.cpp     tests.cpp
+SOURCES +=     main.cpp \    
+    snapshottests.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 DEFINES += QUICK_TEST_SOURCE_DIR=\\\"$$PWD/\\\"
@@ -16,6 +17,14 @@ ROOTDIR = $$PWD/../../
 include(vendor/vendor.pri)
 include($$ROOTDIR/snapshottesting.pri)
 
-DISTFILES +=     qpm.json     qmltests/tst_QmlTests.qml
+DISTFILES +=     qpm.json     \
+    ../../qpm.json \
+    sample/red-100x100.png \
+    sample/Sample1.qml \
+    sample/Sample2.qml \
+    sample/Sample3.qml \
+    sample/Sample4.qml \
+    qmltests/tst_SnapshotTesting.qml
 
-HEADERS +=     tests.h
+HEADERS += \    
+    snapshottests.h

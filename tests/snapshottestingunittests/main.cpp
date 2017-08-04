@@ -2,7 +2,9 @@
 #include <QtTest>
 #include <TestRunner>
 #include <QtQuickTest/quicktest.h>
-#include "tests.h"
+#include <QtShell>
+#include "snapshottests.h"
+#include "snapshottesting.h"
 
 #if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
 #include <execinfo.h>
@@ -31,11 +33,23 @@ int main(int argc, char *argv[])
     signal(SIGSEGV, handleBacktrace);
 #endif
 
+    qputenv("QML_DISABLE_DISK_CACHE", "1");
+
     QGuiApplication app(argc, argv);
+
+    if (qgetenv("TRAVIS") == "true") {
+        SnapshotTesting::setInteractiveEnabled(false);
+    }
+
+    if (qgetenv("APPVEYOR") == "True") {
+        SnapshotTesting::setInteractiveEnabled(false);
+    }
+
+    SnapshotTesting::setSnapshotsFile(QtShell::realpath_strip(SRCDIR, "snapshots.json"));
 
     TestRunner runner;
     runner.addImportPath("qrc:///");
-    runner.add<Tests>();
+    runner.add<SnapshotTests>();
     runner.add(QString(SRCDIR) + "qmltests");
 
     bool error = runner.exec(app.arguments());
