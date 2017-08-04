@@ -1,11 +1,12 @@
 Snapshot Testing
 ================
 
-This project is a library to offer snapshot testing as a tool to make sure your UI does not change unexpectedly. It is inspired by Jest snapshot testing module but it is designed for QML.
+This project is a library to offer snapshot testing as a tool to make sure your UI does not change unexpectedly. It is inspired by Jest Snapshot Testing methodology but it is designed for QML.
 
 Quoted from [Snapshot Testing · Jest](https://facebook.github.io/jest/docs/snapshot-testing.html) :
 
 >> A typical snapshot test case for a mobile app renders a UI component, takes a screenshot, then compares it to a reference image stored alongside the test. The test will fail if the two images do not match: either the change is unexpected, or the screenshot needs to be updated to the new version of the UI component.
+
 >> A similar approach can be taken when it comes to testing your React components. Instead of rendering the graphical UI, which would require building the entire app, you can use a test renderer to quickly generate a serializable value for your React tree.
 
 The concept of this project is similar, but it replaces React component by a QObject/QQuickItem instance then convert to a text representation looks similar to QML. Let’s see a demonstration:
@@ -79,9 +80,12 @@ In the first time execution, it has no any previously saved snapshot. It will pr
 
 ![snapshottesting-1.png (1159×552)](https://raw.githubusercontent.com/benlau/junkcode/master/docs/snapshottesting-1.png)
 
-Once the snapshots file is created, the UI will not prompt again unless there have changed. For example, if it changes item height from 320 to 180. And run the porgramme again. It will show:
+In you press "No", it will throw an exception to make the test case fails.
+
+Once the snapshots file is created, this UI will not prompt again unless there have changed. For example, if it changes item height from 320 to 180. And run the porgramme again. It will show:
 
 ![snapshottesting-2.png (655×549)](https://raw.githubusercontent.com/benlau/junkcode/master/docs/snapshottesting-2.png)
+
 
 Text Representation
 -------------------
