@@ -13,6 +13,9 @@
 #include "snapshottesting.h"
 #include "private/snapshottesting_p.h"
 
+using namespace SnapshotTesting;
+using namespace SnapshotTesting::Private;
+
 SnapshotTests::SnapshotTests(QObject *parent) : QObject(parent)
 {
     auto ref = [=]() {
@@ -39,6 +42,8 @@ void SnapshotTests::test_context()
         QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample1"));
 
         QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Item"));
+
+        QVERIFY(obtainCurrentScopeContext(object) == qmlContext(object));
     }
 
     {
@@ -54,6 +59,7 @@ void SnapshotTests::test_context()
         context = SnapshotTesting::Private::obtainCreationContext(object);
         QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample5Form"));
 
+        QVERIFY(obtainCurrentScopeContext(object) == qmlContext(object));
         QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Sample5Form"));
 
     }
@@ -68,9 +74,8 @@ void SnapshotTests::test_context()
 
         QQuickItem* child = object->findChild<QQuickItem*>("item_sample1");
 
-        qDebug() << SnapshotTesting::Private::obtainRootComponentName(child);
-        QQmlContext* context =  SnapshotTesting::Private::obtainCreationContext(child);
-
+        QVERIFY(obtainCurrentScopeContext(child) != qmlContext(child));
+        QCOMPARE(obtainRootComponentName(object), QString("Item"));
     }
 
     {
@@ -83,7 +88,7 @@ void SnapshotTests::test_context()
 
         QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseContext(object), QString("Sample5Form"));
 
-        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByTopContext(object), QString("Sample6"));
+        QCOMPARE(obtainComponentNameByBaseUrl(obtainCurrentScopeContext(object)->baseUrl()), QString("Sample6"));
 
         QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Sample5"));
     }

@@ -64,6 +64,43 @@ static QString obtainKnownClassName(QObject* object) {
   return res;
 }
 
+QQmlContext* SnapshotTesting::Private::obtainCurrentScopeContext(QObject *object)
+{
+    QList<QQmlContext*> list;
+
+    QQmlContext* context = obtainCreationContext(object);
+
+    QQmlContext* result = 0;
+
+    while (context != 0 && !context->baseUrl().isEmpty()) {
+        list << context;
+        context = context->parentContext();
+    }
+
+    if (list.size() == 0) {
+        return 0;
+    }
+
+    if (object->parent() && list.size() > 0) {
+        if (qmlContext(object->parent()) == list.last()) {
+            list.takeLast();
+        }
+    }
+
+    QQuickItem* item = qobject_cast<QQuickItem*>(object);
+    if (item && item->parentItem() && list.size() > 0) {
+        if (qmlContext(item->parentItem()) == list.last()) {
+            list.takeLast();
+        }
+    }
+
+    if (list.size() > 0) {
+        result = list.last();
+    }
+
+    return result;
+}
+
 QQmlContext *SnapshotTesting::Private::obtainCreationContext(QObject *object)
 {
     QQmlContext* result = 0;
@@ -90,48 +127,23 @@ QString SnapshotTesting::Private::obtainComponentNameByBaseContext(QObject *obje
     return SnapshotTesting::Private::obtainComponentNameByBaseUrl(creationContext->baseUrl());
 }
 
-QString SnapshotTesting::Private::obtainComponentNameByTopContext(QObject *object)
-{
-    QQmlContext* creationContext = SnapshotTesting::Private::obtainCreationContext(object);
-
-    QUrl baseUrl = creationContext->baseUrl();
-    QUrl tmpBaseUrl = baseUrl;
-    QQmlContext* context = creationContext;
-
-    while (!tmpBaseUrl.isEmpty() && context) {
-        baseUrl = tmpBaseUrl;
-        context = context->parentContext();
-        if (context) {
-            tmpBaseUrl = context->baseUrl();
-        }
-    }
-
-    return SnapshotTesting::Private::obtainComponentNameByBaseUrl(baseUrl);
-}
-
 QString SnapshotTesting::Private::obtainComponentNameByInheritedContext(QObject *object)
 {
     QList<QUrl> urls;
     QQmlContext* creationContext = SnapshotTesting::Private::obtainCreationContext(object);
-
-    QUrl baseUrl = creationContext->baseUrl();
-    QUrl tmpBaseUrl = baseUrl;
+    QQmlContext* currentScopeContext = obtainCurrentScopeContext(object);
     QQmlContext* context = creationContext;
 
-    while (!tmpBaseUrl.isEmpty() && context) {
-        urls << tmpBaseUrl;
+    while (context && context != currentScopeContext) {
+        urls << context->baseUrl();
         context = context->parentContext();
-        if (context) {
-            tmpBaseUrl = context->baseUrl();
-        }
     }
 
     QString res;
 
-    if (urls.size() <= 1) {
+    if (urls.size() <= 0) {
         res = SnapshotTesting::Private::obtainComponentNameByClass(object);
     } else {
-        urls.takeLast();
         res = SnapshotTesting::Private::obtainComponentNameByBaseUrl(urls.last());
     }
     return res;
@@ -827,5 +839,6 @@ QString SnapshotTesting::diff(QString original, QString current)
 
     return QString::fromStdString(stream.str());
 }
+
 
 Q_COREAPP_STARTUP_FUNCTION(init)
