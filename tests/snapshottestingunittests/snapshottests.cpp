@@ -6,9 +6,12 @@
 #include <QJsonDocument>
 #include <QQuickItemGrabResult>
 #include <QQuickWindow>
+#include <private/qqmldata_p.h>
+#include <private/qqmlcontext_p.h>
 #include "automator.h"
 #include "snapshottests.h"
 #include "snapshottesting.h"
+#include "private/snapshottesting_p.h"
 
 SnapshotTests::SnapshotTests(QObject *parent) : QObject(parent)
 {
@@ -16,6 +19,47 @@ SnapshotTests::SnapshotTests(QObject *parent) : QObject(parent)
         QTest::qExec(this, 0, 0); // Autotest detect available test cases of a QObject by looking for "QTest::qExec" in source code
     };
     Q_UNUSED(ref);
+}
+
+void SnapshotTests::test_context()
+{
+    QQmlApplicationEngine engine;
+
+    {
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample1.qml"));
+
+        QQmlComponent component(&engine,url);
+
+        QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(object);
+        QQmlContext* context = qmlContext(object);
+        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample1"));
+
+        context = SnapshotTesting::Private::obtainCreationContext(object);
+        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample1"));
+
+        QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Item"));
+    }
+
+    {
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample5.qml"));
+
+        QQmlComponent component(&engine,url);
+
+        QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(object);
+        QQmlContext* context = qmlContext(object);
+        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample5"));
+
+        context = SnapshotTesting::Private::obtainCreationContext(object);
+        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample5Form"));
+
+        QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Sample5Form"));
+
+    }
+
+
+
 }
 
 void SnapshotTests::test_Snapshot()

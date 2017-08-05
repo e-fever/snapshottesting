@@ -14,6 +14,7 @@ signals:
 public slots:
 
 private slots:
+    void test_context();
     void test_Snapshot();
 
     void test_Snapshot_diff();

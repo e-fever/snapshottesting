@@ -8,18 +8,28 @@ Item {
     height: 480
 
     Sample1 {
-        id: item1
+        id: sample1
+    }
+
+    Sample5 {
+        id: sample5
     }
 
     TestCase {
         name: "SnapshotTesting"
         when: windowShown
 
-        function test_capture() {
-            var snapshot = SnapshotTesting.capture(item1);
-            console.log(snapshot);
+        function test_capture_sample1() {
+            var snapshot = SnapshotTesting.capture(sample1);
+            console.log(sample1);
             snapshot = snapshot.replace(Qt.resolvedUrl(".."), "");
-            SnapshotTesting.matchStoredSnapshot("test_capture", snapshot);
+            SnapshotTesting.matchStoredSnapshot("qml_test_capture_sample1", snapshot);
+        }
+
+        function test_capture_sample5() {
+            var snapshot = SnapshotTesting.capture(sample5);
+            snapshot = snapshot.replace(Qt.resolvedUrl(".."), "");
+            SnapshotTesting.matchStoredSnapshot("qml_test_capture_sample5", snapshot);
         }
 
     }

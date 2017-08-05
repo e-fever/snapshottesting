@@ -13,6 +13,7 @@
 #include "snapshottesting.h"
 #include <private/qqmldata_p.h>
 #include <private/qqmlcontext_p.h>
+#include <private/snapshottesting_p.h>
 #include <functional>
 
 /* For dtl */
@@ -45,6 +46,87 @@ static QMap<QString, QStringList> ignoreListMap;
         dest[property + "." + #field] = current.field(); \
     }
 
+static QString obtainClassName(QObject* object) {
+    const QMetaObject* meta = object->metaObject();
+    return meta->className();
+}
+
+/// Obtain the class name of QObject which is known to the system
+static QString obtainKnownClassName(QObject* object) {
+  const QMetaObject* meta = object->metaObject();
+  QString res;
+
+  while (!classNameToItemNameTable.contains(res) && meta != 0) {
+      res = meta->className();
+      meta = meta->superClass();
+  }
+
+  return res;
+}
+
+QQmlContext *SnapshotTesting::Private::obtainCreationContext(QObject *object)
+{
+    QQmlContext* result = 0;
+    QQmlData *ddata = QQmlData::get(object, false);
+    if (ddata && ddata->context) {
+        // obtain the inner context name
+        result  = ddata->context->asQQmlContext();
+    }
+    return result;
+}
+
+QString SnapshotTesting::Private::obtainComponentNameByBaseUrl(const QUrl &baseUrl)
+{
+    QString path = QtShell::realpath_strip(baseUrl.toString());
+    QFileInfo info(path);
+
+    return info.baseName();
+}
+
+QString SnapshotTesting::Private::obtainComponentNameByContext(QObject *object)
+{
+    QQmlContext* creationContext = SnapshotTesting::Private::obtainCreationContext(object);
+
+    return SnapshotTesting::Private::obtainComponentNameByBaseUrl(creationContext->baseUrl());
+}
+
+QString SnapshotTesting::Private::obtainComponentNameByClass(QObject *object)
+{
+    QString result;
+    QString className = obtainClassName(object);
+
+    if (className.indexOf("QQuick") == 0) {
+        result = className.replace("QQuick", "");
+    }
+
+    if (result.isNull()) {
+        QString knownClassName = obtainKnownClassName(object);
+
+        result = classNameToItemNameTable[knownClassName];
+    }
+    return result;
+}
+
+QString SnapshotTesting::Private::obtainRootComponentName(QObject *object)
+{
+    QQmlContext* context = qmlContext(object);
+    QQmlContext* creationContext = SnapshotTesting::Private::obtainCreationContext(object);
+
+    if (!context || !creationContext) {
+        return SnapshotTesting::Private::obtainComponentNameByClass(object);
+    }
+
+    QString outerName = SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl());
+    QString creationName = SnapshotTesting::Private::obtainComponentNameByBaseUrl(creationContext->baseUrl());
+
+    if (outerName == creationName) {
+        return SnapshotTesting::Private::obtainComponentNameByClass(object);
+    } else {
+        return SnapshotTesting::Private::obtainComponentNameByContext(object);
+    }
+}
+
+
 static bool inherited(QObject *object, QString className) {
     bool res = false;
 
@@ -68,23 +150,13 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     QList<QQmlContext*> topLevelContexts;
     QList<QUrl> topLevelBaseUrlList;
 
-    auto obtainInnerContext = [=](QObject * object) {
-        QQmlContext* result = 0;
-        QQmlData *ddata = QQmlData::get(object, false);
-        if (ddata && ddata->context) {
-            // obtain the inner context name
-            result  = ddata->context->asQQmlContext();
-        }
-        return result;
-    };
-
     {
         QQmlContext* context = qmlContext(source);
         if (context) {
             topLevelContexts << context;
             topLevelBaseUrlList<< context->baseUrl();
         }
-        context = obtainInnerContext(source);
+        context = SnapshotTesting::Private::obtainCreationContext(source);
         if (context) {
             topLevelContexts << context;
             topLevelBaseUrlList<< context->baseUrl();
@@ -99,10 +171,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             QUrl fileUrl = ddata->context->url();
 
             if (!fileUrl.isEmpty()) {
-                QString path = QtShell::realpath_strip(fileUrl.toString());
-                QFileInfo info(path);
-
-                result = info.baseName();
+                result = SnapshotTesting::Private::obtainComponentNameByBaseUrl(fileUrl.toString());
             }
         }
         return result;
@@ -124,43 +193,17 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         return res;
     };
 
-    auto obtainClassName = [=](QObject* object) {
-        const QMetaObject* meta = object->metaObject();
-        return meta->className();
-    };
-
-    /// Obtain the class name of QObject which is known to the system
-    auto obtainKnownClassName = [=](QObject* object) {
-      const QMetaObject* meta = object->metaObject();
-      QString res;
-
-      while (!classNameToItemNameTable.contains(res) && meta != 0) {
-          res = meta->className();
-          meta = meta->superClass();
-      }
-
-      return res;
-    };
-
     /// Obtain the item name in QML
     auto obtainItemName = [=,&topLevelContextName](QObject* object) {
-        QString result;
-        QString className = obtainClassName(object);
-        if (className.indexOf("QQuick") == 0) {
-            result = className.replace("QQuick", "");
-        }
-
-        if (result.isNull()) {
-            QString knownClassName = obtainKnownClassName(object);
-
-            result = classNameToItemNameTable[knownClassName];
-        }
+        QString result;       
 
         if (object == source) {
-            return result;
+            return SnapshotTesting::Private::obtainRootComponentName(object);
         }
 
-        if (!expandAll) {
+        result = SnapshotTesting::Private::obtainComponentNameByClass(object);
+
+        if (!expandAll && object != source) {
             QString contextName = obtainContextName(object);
             if (contextName != topLevelContextName && contextName != "") {
                 result = contextName;
@@ -752,5 +795,6 @@ QString SnapshotTesting::diff(QString original, QString current)
 
     return QString::fromStdString(stream.str());
 }
+
 
 Q_COREAPP_STARTUP_FUNCTION(init)
