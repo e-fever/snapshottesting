@@ -102,7 +102,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
                 QString path = QtShell::realpath_strip(fileUrl.toString());
                 QFileInfo info(path);
 
-                result = info.completeBaseName();
+                result = info.baseName();
             }
         }
         return result;

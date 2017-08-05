@@ -11,4 +11,7 @@ Item {
             id: sampleItem2
         }
     }
+
+    Sample5 {
+    }
 }

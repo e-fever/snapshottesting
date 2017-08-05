@@ -50,4 +50,8 @@ Item {
     QQC2.Button {
         id: item7
     }
+
+    MouseArea {
+        id: item8
+    }
 }
