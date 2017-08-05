@@ -7,6 +7,8 @@ Item {
     height: 480
 
     Sample1 {
+        id: item_sample1
+        objectName: "item_sample1"
         Item {
             width: 10
             height: 10

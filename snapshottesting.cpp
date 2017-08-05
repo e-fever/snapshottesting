@@ -343,7 +343,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
                 continue;
             }
 
-            if (value.canConvert<QFont>()) {
+            if (value.type() == QVariant::Font) {
                 _dehydrateFont(dest, stringName, defaultValues[stringName].value<QFont>(), value.value<QFont>());
                 continue;
             } else if (value.canConvert<QObject*>()) {

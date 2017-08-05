@@ -21,7 +21,6 @@ Item {
 
         function test_capture_sample1() {
             var snapshot = SnapshotTesting.capture(sample1);
-            console.log(sample1);
             snapshot = snapshot.replace(Qt.resolvedUrl(".."), "");
             SnapshotTesting.matchStoredSnapshot("qml_test_capture_sample1", snapshot);
         }
