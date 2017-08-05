@@ -24,6 +24,15 @@ SnapshotTests::SnapshotTests(QObject *parent) : QObject(parent)
     Q_UNUSED(ref);
 }
 
+void SnapshotTests::test_classNameToComponentName()
+{
+    QCOMPARE(classNameToComponentName("AnyOtherClass"), QString("AnyOtherClass"));
+    QCOMPARE(classNameToComponentName("AnyOtherClass_QML_123"), QString("AnyOtherClass"));
+    QCOMPARE(classNameToComponentName("QQuickItem"), QString("Item"));
+    QCOMPARE(classNameToComponentName("QQuickItem_QML_123"), QString("Item"));
+    QCOMPARE(classNameToComponentName("QQuickItem_QML_4523"), QString("Item"));
+}
+
 void SnapshotTests::test_context()
 {
     QQmlApplicationEngine engine;
@@ -94,7 +103,7 @@ void SnapshotTests::test_context()
     }
 }
 
-void SnapshotTests::test_Snapshot()
+void SnapshotTests::test_loading_config()
 {
     {
         QString text = QtShell::cat(":/qt-project.org/imports/SnapshotTesting/config/snapshot-config.json");
@@ -107,7 +116,7 @@ void SnapshotTests::test_Snapshot()
     }
 }
 
-void SnapshotTests::test_Snapshot_diff()
+void SnapshotTests::test_SnapshotTesting_diff()
 {
     QString text1 = "A\nB\nC";
     QString text2 = "A\nD\nC";

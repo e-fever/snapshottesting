@@ -14,10 +14,14 @@ signals:
 public slots:
 
 private slots:
-    void test_context();
-    void test_Snapshot();
 
-    void test_Snapshot_diff();
+    void test_classNameToComponentName();
+
+    void test_context();
+
+    void test_loading_config();
+
+    void test_SnapshotTesting_diff();
 
     void test_SnapshotTesting_saveSnapshots();
 

@@ -5,6 +5,8 @@ namespace SnapshotTesting {
 
     namespace Private {
 
+        QString classNameToComponentName(const QString &className);
+
         /// Obtain the context of the input object which should it be belonged to, but not its parent's scope
         QQmlContext* obtainCurrentScopeContext(QObject* object);
 

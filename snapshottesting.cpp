@@ -64,6 +64,22 @@ static QString obtainKnownClassName(QObject* object) {
   return res;
 }
 
+QString SnapshotTesting::Private::classNameToComponentName(const QString &className)
+{
+    QString res = className;
+    if (res.indexOf("QQuick") == 0) {
+        res = res.replace("QQuick", "");
+    }
+
+    QRegExp rx("_QML_[0-9]+$");
+
+    if (rx.indexIn(res) >= 0) {
+        res = res.replace(rx, "");
+    }
+
+    return res;
+}
+
 QQmlContext* SnapshotTesting::Private::obtainCurrentScopeContext(QObject *object)
 {
     QList<QQmlContext*> list;
@@ -155,9 +171,7 @@ QString SnapshotTesting::Private::obtainComponentNameByClass(QObject *object)
     QString result;
     QString className = obtainClassName(object);
 
-    if (className.indexOf("QQuick") == 0) {
-        result = className.replace("QQuick", "");
-    }
+    result = classNameToComponentName(className);
 
     if (result.isNull()) {
         QString knownClassName = obtainKnownClassName(object);
@@ -839,6 +853,5 @@ QString SnapshotTesting::diff(QString original, QString current)
 
     return QString::fromStdString(stream.str());
 }
-
 
 Q_COREAPP_STARTUP_FUNCTION(init)
