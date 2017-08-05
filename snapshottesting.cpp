@@ -83,12 +83,60 @@ QString SnapshotTesting::Private::obtainComponentNameByBaseUrl(const QUrl &baseU
     return info.baseName();
 }
 
-QString SnapshotTesting::Private::obtainComponentNameByContext(QObject *object)
+QString SnapshotTesting::Private::obtainComponentNameByBaseContext(QObject *object)
 {
     QQmlContext* creationContext = SnapshotTesting::Private::obtainCreationContext(object);
 
     return SnapshotTesting::Private::obtainComponentNameByBaseUrl(creationContext->baseUrl());
 }
+
+QString SnapshotTesting::Private::obtainComponentNameByTopContext(QObject *object)
+{
+    QQmlContext* creationContext = SnapshotTesting::Private::obtainCreationContext(object);
+
+    QUrl baseUrl = creationContext->baseUrl();
+    QUrl tmpBaseUrl = baseUrl;
+    QQmlContext* context = creationContext;
+
+    while (!tmpBaseUrl.isEmpty() && context) {
+        baseUrl = tmpBaseUrl;
+        context = context->parentContext();
+        if (context) {
+            tmpBaseUrl = context->baseUrl();
+        }
+    }
+
+    return SnapshotTesting::Private::obtainComponentNameByBaseUrl(baseUrl);
+}
+
+QString SnapshotTesting::Private::obtainComponentNameByInheritedContext(QObject *object)
+{
+    QList<QUrl> urls;
+    QQmlContext* creationContext = SnapshotTesting::Private::obtainCreationContext(object);
+
+    QUrl baseUrl = creationContext->baseUrl();
+    QUrl tmpBaseUrl = baseUrl;
+    QQmlContext* context = creationContext;
+
+    while (!tmpBaseUrl.isEmpty() && context) {
+        urls << tmpBaseUrl;
+        context = context->parentContext();
+        if (context) {
+            tmpBaseUrl = context->baseUrl();
+        }
+    }
+
+    QString res;
+
+    if (urls.size() <= 1) {
+        res = SnapshotTesting::Private::obtainComponentNameByClass(object);
+    } else {
+        urls.takeLast();
+        res = SnapshotTesting::Private::obtainComponentNameByBaseUrl(urls.last());
+    }
+    return res;
+}
+
 
 QString SnapshotTesting::Private::obtainComponentNameByClass(QObject *object)
 {
@@ -109,23 +157,8 @@ QString SnapshotTesting::Private::obtainComponentNameByClass(QObject *object)
 
 QString SnapshotTesting::Private::obtainRootComponentName(QObject *object)
 {
-    QQmlContext* context = qmlContext(object);
-    QQmlContext* creationContext = SnapshotTesting::Private::obtainCreationContext(object);
-
-    if (!context || !creationContext) {
-        return SnapshotTesting::Private::obtainComponentNameByClass(object);
-    }
-
-    QString outerName = SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl());
-    QString creationName = SnapshotTesting::Private::obtainComponentNameByBaseUrl(creationContext->baseUrl());
-
-    if (outerName == creationName) {
-        return SnapshotTesting::Private::obtainComponentNameByClass(object);
-    } else {
-        return SnapshotTesting::Private::obtainComponentNameByContext(object);
-    }
+    return SnapshotTesting::Private::obtainComponentNameByInheritedContext(object);
 }
-
 
 static bool inherited(QObject *object, QString className) {
     bool res = false;
@@ -195,8 +228,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
 
     /// Obtain the item name in QML
     auto obtainItemName = [=,&topLevelContextName](QObject* object) {
-        QString result;       
-
+        QString result;
         if (object == source) {
             return SnapshotTesting::Private::obtainRootComponentName(object);
         }
@@ -795,6 +827,5 @@ QString SnapshotTesting::diff(QString original, QString current)
 
     return QString::fromStdString(stream.str());
 }
-
 
 Q_COREAPP_STARTUP_FUNCTION(init)

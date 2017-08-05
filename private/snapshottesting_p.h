@@ -7,10 +7,14 @@ namespace SnapshotTesting {
 
         QQmlContext* obtainCreationContext(QObject* object);
 
-        /// Obtain the name of the component offer the context for display by the base url from QQmlContext
         QString obtainComponentNameByBaseUrl(const QUrl& baseUrl);
 
-        QString obtainComponentNameByContext(QObject* object);
+        /// Obtain the name of the component by the creation context (the bottom most component
+        QString obtainComponentNameByBaseContext(QObject* object);
+
+        QString obtainComponentNameByTopContext(QObject *object);
+
+        QString obtainComponentNameByInheritedContext(QObject * object);
 
         QString obtainComponentNameByClass(QObject* object);
 

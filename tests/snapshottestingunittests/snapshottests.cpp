@@ -58,8 +58,35 @@ void SnapshotTests::test_context()
 
     }
 
+    {
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample2.qml"));
 
+        QQmlComponent component(&engine,url);
 
+        QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(object);
+
+        QQuickItem* child = object->findChild<QQuickItem*>("item_sample1");
+
+        qDebug() << SnapshotTesting::Private::obtainRootComponentName(child);
+        QQmlContext* context =  SnapshotTesting::Private::obtainCreationContext(child);
+
+    }
+
+    {
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample6.qml"));
+
+        QQmlComponent component(&engine,url);
+
+        QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(object);
+
+        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseContext(object), QString("Sample5Form"));
+
+        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByTopContext(object), QString("Sample6"));
+
+        QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Sample5"));
+    }
 }
 
 void SnapshotTests::test_Snapshot()
