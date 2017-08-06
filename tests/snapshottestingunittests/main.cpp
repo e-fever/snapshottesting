@@ -38,16 +38,6 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    if (qgetenv("TRAVIS") == "true") {
-        SnapshotTesting::setInteractiveEnabled(false);
-    }
-
-    if (qgetenv("APPVEYOR") == "True") {
-        SnapshotTesting::setInteractiveEnabled(false);
-    }
-
-    SnapshotTesting::setSnapshotsFile(QtShell::realpath_strip(SRCDIR, "snapshots.json"));
-
     TestRunner runner;
     runner.addImportPath("qrc:///");
     runner.add<SnapshotTests>();
