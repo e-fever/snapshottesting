@@ -95,7 +95,9 @@
             "paintedHeight",
             "paintedWidth",
             "contentHeight",
-            "baseUrl"
+            "baseUrl",
+            "contentWidth",
+            "implicitWidth"
         ]
     },
     "QQuickColumn": {
@@ -129,6 +131,12 @@
         },
         "ignoreList": [
             "baselineOffset"
+        ]
+    },
+    "QQuickMouseArea": {
+        "ignoreList": [
+            "mouseX",
+            "mouseY"
         ]
     }
 }
