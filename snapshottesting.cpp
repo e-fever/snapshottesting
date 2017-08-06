@@ -739,14 +739,6 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
 {
     QVariantMap snapshots = SnapshotTesting::loadStoredSnapshots();
 
-    /*
-    if (!snapshots.contains(name)) {
-        SnapshotTesting::setSnapshot(name, snapshot);
-        SnapshotTesting::saveSnapshots();
-        return true;
-    }
-    */
-
     QString originalVersion = snapshots[name].toString();
 
     if (originalVersion == snapshot) {
