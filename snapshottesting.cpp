@@ -801,7 +801,9 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
 }
 
 static void init() {
-    m_snapshotFile = QtShell::realpath_strip(QtShell::pwd(), "snapshots.json");
+    if (m_snapshotFile.isNull()) {
+        m_snapshotFile = QtShell::realpath_strip(QtShell::pwd(), "snapshots.json");
+    }
 
     QString text = QtShell::cat(":/qt-project.org/imports/SnapshotTesting/config/snapshot-config.json");
 
