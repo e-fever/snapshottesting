@@ -49,11 +49,18 @@ static QMap<QString, QStringList> ignoreListMap;
 
 static QString normalizeComponentName(const QString &name) {
     QString res = name;
-    QRegExp rx("_QML_[0-9]+$");
+    QStringList list;
 
-    if (rx.indexIn(res) >= 0) {
-        res = res.replace(rx, "");
+    list << "_QML_[0-9]+$" << "_QMLTYPE_[0-9]+$";
+
+    foreach (QString pattern, list) {
+        QRegExp rx(pattern);
+
+        if (rx.indexIn(res) >= 0) {
+            res = res.replace(rx, "");
+        }
     }
+
     return res;
 }
 
