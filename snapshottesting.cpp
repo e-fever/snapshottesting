@@ -20,6 +20,7 @@
 using namespace std;
 #include <iostream>
 #include <sstream>
+#include <cmath>
 #include <vector>
 #include "dtl/Sequence.hpp"
 #include "dtl/Lcs.hpp"
@@ -46,6 +47,16 @@ static QMap<QString, QStringList> ignoreListMap;
         dest[property + "." + #field] = current.field(); \
     }
 
+static QString normalizeComponentName(const QString &name) {
+    QString res = name;
+    QRegExp rx("_QML_[0-9]+$");
+
+    if (rx.indexIn(res) >= 0) {
+        res = res.replace(rx, "");
+    }
+    return res;
+}
+
 static QString obtainClassName(QObject* object) {
     const QMetaObject* meta = object->metaObject();
     return meta->className();
@@ -71,11 +82,7 @@ QString SnapshotTesting::Private::classNameToComponentName(const QString &classN
         res = res.replace("QQuick", "");
     }
 
-    QRegExp rx("_QML_[0-9]+$");
-
-    if (rx.indexIn(res) >= 0) {
-        res = res.replace(rx, "");
-    }
+    res = normalizeComponentName(res);
 
     return res;
 }
@@ -181,9 +188,16 @@ QString SnapshotTesting::Private::obtainComponentNameByClass(QObject *object)
     return result;
 }
 
-QString SnapshotTesting::Private::obtainRootComponentName(QObject *object)
+QString SnapshotTesting::Private::obtainRootComponentName(QObject *object, bool expandAll)
 {
-    return SnapshotTesting::Private::obtainComponentNameByInheritedContext(object);
+    QString res;
+    if (expandAll) {
+        res = obtainComponentNameByClass(object);
+    } else {
+        res = SnapshotTesting::Private::obtainComponentNameByInheritedContext(object);
+    }
+
+    return res;
 }
 
 static bool inherited(QObject *object, QString className) {
@@ -256,7 +270,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     auto obtainItemName = [=,&topLevelContextName](QObject* object) {
         QString result;
         if (object == source) {
-            return SnapshotTesting::Private::obtainRootComponentName(object);
+            return SnapshotTesting::Private::obtainRootComponentName(object, options.expandAll);
         }
 
         result = SnapshotTesting::Private::obtainComponentNameByClass(object);
@@ -274,17 +288,18 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     auto obtainDynamicGeneratedDefaultValuesMap = [=](QObject* object) {
         static QMap<QString, QVariantMap> autoDefaultValueMap;
 
-        QString className = obtainClassName(object);
+        QString className = normalizeComponentName(obtainClassName(object));
         if (autoDefaultValueMap.contains(className)) {
             return autoDefaultValueMap[className];
         }
 
         QVariantMap res;
+
         if (className.indexOf("QQuick") != 0) {
             return res;
         }
 
-        QString itemName = obtainItemName(object);
+        QString itemName = SnapshotTesting::Private::obtainComponentNameByClass(object);
 
         QQmlApplicationEngine engine;
 
@@ -458,7 +473,8 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             }
         }
 
-        QString className = obtainClassName(object);
+        QString className = normalizeComponentName(obtainClassName(object));
+
         if (className == "QQuickRepeater") {
             int count = object->property("count").toInt();
             for (int i = 0 ; i < count; i++) {

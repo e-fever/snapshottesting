@@ -1,5 +1,6 @@
 #include <QCoreApplication>
 #include <QQmlEngine>
+#include <QtQml>
 #include "snapshottesting.h"
 #include "snapshottestingadapter.h"
 
