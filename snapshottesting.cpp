@@ -597,7 +597,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     return travel(source);
 }
 
-static QString prettyText(QVariantMap snapshot) {
+static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& options) {
     QStringList priorityFields;
 
     priorityFields << "objectName" << "x" << "y" << "width" << "height";
@@ -660,7 +660,7 @@ static QString prettyText(QVariantMap snapshot) {
             return lines.join("\n");
         }
 
-        int currentIndent = indent + 4;
+        int currentIndent = indent + options.indentSize;
 
         lines << QString().fill(' ',indent) + snapshot["$name"].toString() + " {";
 
@@ -815,7 +815,7 @@ bool SnapshotTesting::ignoreAll()
 QString SnapshotTesting::capture(QObject *object, SnapshotTesting::Options options)
 {
     QVariantMap data = dehydrate(object, options);
-    return prettyText(data);
+    return prettyText(data, options);
 }
 
 bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &snapshot)

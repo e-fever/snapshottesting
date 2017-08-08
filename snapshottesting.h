@@ -12,11 +12,13 @@ namespace SnapshotTesting {
             captureVisibleItemOnly = true;
             expandAll = false;
             hideId = false;
+            indentSize = 4;
         }
 
         bool captureVisibleItemOnly;
         bool expandAll;
         bool hideId;
+        int indentSize;
     };
 
     /// Set the file name to save the stored snapshots

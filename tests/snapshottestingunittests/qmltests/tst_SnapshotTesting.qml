@@ -48,7 +48,7 @@ Item {
             for (var name in objects) {
                 var target = objects[name];
                 var snapshot;
-                snapshot = SnapshotTesting.capture(target);
+                snapshot = SnapshotTesting.capture(target, {indentSize: 4});
                 snapshot = snapshot.replace(new RegExp(Qt.resolvedUrl(".."), "g"), "");
                 SnapshotTesting.matchStoredSnapshot("qml_test_capture_" + name, snapshot);
 

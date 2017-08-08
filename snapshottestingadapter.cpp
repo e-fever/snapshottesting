@@ -26,6 +26,9 @@ QString Adapter::capture(QObject *object, QVariantMap options)
     if (options.contains("hideId")) {
         opt.hideId = options["hideId"].toBool();
     }
+    if (options.contains("indentSize")) {
+        opt.indentSize = options["indentSize"].toInt();
+    }
 
     return SnapshotTesting::capture(object, opt);
 }
