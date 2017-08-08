@@ -10,4 +10,8 @@ Item {
         property int customValue: 3
     }
 
+    Sample9 {
+
+    }
+
 }

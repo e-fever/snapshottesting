@@ -47,7 +47,7 @@ static QMap<QString, QStringList> ignoreListMap;
         dest[property + "." + #field] = current.field(); \
     }
 
-static QString normalizeComponentName(const QString &name) {
+static QString removeDynamicClassSuffix(const QString &name) {
     QString res = name;
     QStringList list;
 
@@ -89,7 +89,7 @@ QString SnapshotTesting::Private::classNameToComponentName(const QString &classN
         res = res.replace("QQuick", "");
     }
 
-    res = normalizeComponentName(res);
+    res = removeDynamicClassSuffix(res);
 
     return res;
 }
@@ -329,10 +329,9 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         return result;
     };
 
-    auto obtainDynamicGeneratedDefaultValuesMap = [=](QObject* object) {
+    auto obtainDynamicGeneratedDefaultValuesMapByClassName = [=](QString className) {
         static QMap<QString, QVariantMap> autoDefaultValueMap;
 
-        QString className = normalizeComponentName(obtainClassName(object));
         if (autoDefaultValueMap.contains(className)) {
             return autoDefaultValueMap[className];
         }
@@ -343,7 +342,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             return res;
         }
 
-        QString itemName = SnapshotTesting::Private::obtainComponentNameByClass(object);
+        QString itemName = SnapshotTesting::Private::classNameToComponentName(className);
 
         QQmlApplicationEngine engine;
 
@@ -371,6 +370,11 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         return res;
     };
 
+    auto obtainDynamicGeneratedDefaultValuesMap = [=](QObject* object) {
+
+        QString className = removeDynamicClassSuffix(obtainClassName(object));
+        return obtainDynamicGeneratedDefaultValuesMapByClassName(className);
+    };
 
     auto obtainDefaultValuesMap = [=](QObject* object) {
         const QMetaObject* meta = object->metaObject();
@@ -380,14 +384,20 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
 
         while (meta != 0) {
             QString className = meta->className();
-            classes << className;
+            classes << removeDynamicClassSuffix(className);
             meta = meta->superClass();
         }
 
         while (classes.size() > 0) {
             QString className = classes.takeLast();
+            QList<QVariantMap> pending;
+            pending << obtainDynamicGeneratedDefaultValuesMapByClassName(className);
             if (defaultValueMap.contains(className)) {
-                QVariantMap map = defaultValueMap[className];
+                pending << defaultValueMap[className];
+            }
+
+            for (int i = 0 ; i < pending.size(); i++) {
+                QVariantMap map = pending[i];
                 QStringList keys = map.keys();
                 foreach (QString key, keys) {
                     result[key] = map[key];
@@ -517,7 +527,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             }
         }
 
-        QString className = normalizeComponentName(obtainClassName(object));
+        QString className = removeDynamicClassSuffix(obtainClassName(object));
 
         if (className == "QQuickRepeater") {
             int count = object->property("count").toInt();
