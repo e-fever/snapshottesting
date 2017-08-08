@@ -23,44 +23,40 @@ Item {
         id: sample6
     }
 
+    Sample7 {
+        id: sample7
+    }
+
+    Sample8 {
+        id: sample8
+    }
+
     TestCase {
         name: "SnapshotTesting"
         when: windowShown
 
-        function test_capture_sample1() {
-            var snapshot = SnapshotTesting.capture(sample1);
-            snapshot = snapshot.replace(new RegExp(Qt.resolvedUrl(".."), "g"), "");
-            SnapshotTesting.matchStoredSnapshot("qml_test_capture_sample1", snapshot);
+        function test_capture() {
+            var objects = {
+                "sample1": sample1,
+                "sample2": sample2,
+                "sample5": sample5,
+                "sample6": sample6,
+                "sample7": sample7,
+                "sample8": sample8
+            }
+
+            for (var name in objects) {
+                var target = objects[name];
+                var snapshot;
+                snapshot = SnapshotTesting.capture(target);
+                snapshot = snapshot.replace(new RegExp(Qt.resolvedUrl(".."), "g"), "");
+                SnapshotTesting.matchStoredSnapshot("qml_test_capture_" + name, snapshot);
+
+                snapshot = SnapshotTesting.capture(target, {expandAll: true});
+                snapshot = snapshot.replace(new RegExp(Qt.resolvedUrl(".."), "g"), "");
+                SnapshotTesting.matchStoredSnapshot("qml_test_capture_expandAll_" + name, snapshot);
+            }
         }
-
-        function test_capture_sample2() {
-            var snapshot;
-            snapshot = SnapshotTesting.capture(sample2);
-            snapshot = snapshot.replace(new RegExp(Qt.resolvedUrl(".."), "g"), "");
-            SnapshotTesting.matchStoredSnapshot("qml_test_capture_sample2", snapshot);
-
-            snapshot = SnapshotTesting.capture(sample2 , {expandAll: true});
-            snapshot = snapshot.replace(new RegExp(Qt.resolvedUrl(".."), "g"), "");
-            SnapshotTesting.matchStoredSnapshot("qml_test_capture_expandAll_sample2", snapshot);
-        }
-
-        function test_capture_sample5() {
-            var snapshot = SnapshotTesting.capture(sample5);
-            snapshot = snapshot.replace(new RegExp(Qt.resolvedUrl(".."), "g"), "");
-            SnapshotTesting.matchStoredSnapshot("qml_test_capture_sample5", snapshot);
-        }
-
-        function test_capture_sample6() {
-            var snapshot;
-            snapshot = SnapshotTesting.capture(sample6);
-            snapshot = snapshot.replace(new RegExp(Qt.resolvedUrl(".."), "g"), "");
-            SnapshotTesting.matchStoredSnapshot("qml_test_capture_sample6", snapshot);
-
-            snapshot = SnapshotTesting.capture(sample6 , {expandAll: true});
-            snapshot = snapshot.replace(new RegExp(Qt.resolvedUrl(".."), "g"), "");
-            SnapshotTesting.matchStoredSnapshot("qml_test_capture_expandAll_sample6", snapshot);
-        }
-
     }
 
 }

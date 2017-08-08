@@ -101,6 +101,20 @@ void SnapshotTests::test_context()
 
         QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Sample5"));
     }
+
+    {
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample7.qml"));
+
+        QQmlComponent component(&engine,url);
+
+        QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(object);
+
+        QCOMPARE(obtainComponentNameByClass(object), QString("Sample7"));
+
+        QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Item"));
+        QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object, true), QString("Item"));
+    }
 }
 
 void SnapshotTests::test_loading_config()

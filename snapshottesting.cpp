@@ -75,7 +75,7 @@ static QString obtainKnownClassName(QObject* object) {
   QString res;
 
   while (!classNameToItemNameTable.contains(res) && meta != 0) {
-      res = meta->className();
+      res =  SnapshotTesting::Private::classNameToComponentName(meta->className());
       meta = meta->superClass();
   }
 
@@ -173,6 +173,13 @@ QString SnapshotTesting::Private::obtainComponentNameByInheritedContext(QObject 
 
     if (urls.size() <= 0) {
         res = SnapshotTesting::Private::obtainComponentNameByClass(object);
+
+        QString currentScopeContextName = obtainComponentNameByBaseUrl(currentScopeContext->baseUrl());
+
+        if (res == currentScopeContextName) {
+            res = obtainComponentNameByInheritedClass(object);
+        }
+
     } else {
         res = SnapshotTesting::Private::obtainComponentNameByBaseUrl(urls.last());
     }
@@ -195,11 +202,40 @@ QString SnapshotTesting::Private::obtainComponentNameByClass(QObject *object)
     return result;
 }
 
+QString SnapshotTesting::Private::obtainComponentNameByInheritedClass(QObject *object)
+{
+    QString result;
+
+    const QMetaObject* meta = object->metaObject();
+    if (meta->superClass()) {
+        const QMetaObject* superClass = meta->superClass();
+        result = classNameToComponentName(superClass->className());
+    }
+
+    return result;
+}
+
+QString SnapshotTesting::Private::obtainComponentNameByQuickClass(QObject *object)
+{
+    QString result;
+
+    const QMetaObject* meta = object->metaObject();
+
+    while (meta && !(result.indexOf("QQuick") == 0 || result.indexOf("QObject")  == 0 )  ) {
+        result = meta->className();
+        meta = meta->superClass();
+    }
+
+    result = classNameToComponentName(result);
+    return result;
+}
+
+
 QString SnapshotTesting::Private::obtainRootComponentName(QObject *object, bool expandAll)
 {
     QString res;
     if (expandAll) {
-        res = obtainComponentNameByClass(object);
+        res = obtainComponentNameByQuickClass(object);
     } else {
         res = SnapshotTesting::Private::obtainComponentNameByInheritedContext(object);
     }
@@ -276,11 +312,12 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     /// Obtain the item name in QML
     auto obtainItemName = [=,&topLevelContextName](QObject* object) {
         QString result;
+
         if (object == source) {
             return SnapshotTesting::Private::obtainRootComponentName(object, options.expandAll);
         }
 
-        result = SnapshotTesting::Private::obtainComponentNameByClass(object);
+        result = SnapshotTesting::Private::obtainComponentNameByQuickClass(object);
 
         if (!expandAll && object != source) {
             QString contextName = obtainContextName(object);

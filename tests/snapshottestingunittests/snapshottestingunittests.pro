@@ -29,7 +29,9 @@ DISTFILES +=     qpm.json     \
     ../../README.md \
     sample/Sample5Form.ui.qml \
     sample/Sample5.qml \
-    sample/Sample6.qml
+    sample/Sample6.qml \
+    sample/Sample7.qml \
+    sample/Sample8.qml
 
 HEADERS += \    
     snapshottests.h
