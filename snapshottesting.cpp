@@ -346,7 +346,15 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
 
         QQmlApplicationEngine engine;
 
-        QString qml  = QString("import QtQuick 2.4\n import QtQuick.Controls 2.0\n import QtQuick.Layouts 1.2\n %1 {}").arg(itemName);
+        QStringList packages;
+        packages << "import QtQuick 2.0";
+        packages << "import QtQuick.Layouts 1.1";
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
+        packages << "import QtQuick.Controls 2.0";
+#endif
+
+        QString qml  = QString("%2\n %1 {}").arg(itemName).arg(packages.join("\n"));
 
         QQmlComponent comp (&engine);
         comp.setData(qml.toUtf8(),QUrl());
@@ -361,9 +369,14 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
                 const char* name = property.name();
 
                 QVariant value = holder->property(name);
+                if (value.canConvert<QObject*>()) {
+                    continue;
+                }
                 res[name] = value;
             }
             delete holder;
+        } else {
+            qDebug() << comp.errorString();
         }
 
         autoDefaultValueMap[className] = res;
