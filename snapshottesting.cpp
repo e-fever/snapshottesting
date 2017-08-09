@@ -16,6 +16,10 @@
 #include <private/snapshottesting_p.h>
 #include <functional>
 
+
+using namespace SnapshotTesting;
+using namespace SnapshotTesting::Private;
+
 /* For dtl */
 using namespace std;
 #include <iostream>
@@ -266,6 +270,12 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     QList<QQmlContext*> topLevelContexts;
     QList<QUrl> topLevelBaseUrlList;
 
+    class Header {
+    public:
+        QString name;
+        QString comment;
+    };
+
     {
         QQmlContext* context = qmlContext(source);
         if (context) {
@@ -310,11 +320,17 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     };
 
     /// Obtain the item name in QML
-    auto obtainItemName = [=,&topLevelContextName](QObject* object) {
+    auto obtainItemHeader = [=,&topLevelContextName](QObject* object) {
+        Header header;
         QString result;
 
         if (object == source) {
-            return SnapshotTesting::Private::obtainRootComponentName(object, options.expandAll);
+            header.name = SnapshotTesting::Private::obtainRootComponentName(object, options.expandAll);
+            QString contextName = obtainComponentNameByBaseUrl(obtainCurrentScopeContext(object)->baseUrl());
+            if (header.name != contextName) {
+                header.comment = contextName;
+            }
+            return header;
         }
 
         result = SnapshotTesting::Private::obtainComponentNameByQuickClass(object);
@@ -326,7 +342,9 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             }
         }
 
-        return result;
+        header.name = result;
+
+        return header;
     };
 
     auto obtainDynamicGeneratedDefaultValuesMapByClassName = [=](QString className) {
@@ -575,7 +593,12 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         }
 
         dest["$class"] = obtainKnownClassName(object);
-        dest["$name"] = obtainItemName(object);
+        Header header = obtainItemHeader(object);
+        dest["$name"] = header.name;
+
+        if (!header.comment.isNull()) {
+            dest["$comment"] = header.comment;
+        }
 
         QUrl baseUrl;
         QQmlContext *context = qmlContext(object);
@@ -662,7 +685,11 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
 
         int currentIndent = indent + options.indentSize;
 
-        lines << QString().fill(' ',indent) + snapshot["$name"].toString() + " {";
+        if (!snapshot.contains("$comment")) {
+            lines << QString().fill(' ',indent) + snapshot["$name"].toString() + " {";
+        } else {
+            lines << QString().fill(' ',indent) + snapshot["$name"].toString() + QString(" { // %1").arg(snapshot["$comment"].toString());
+        }
 
         QStringList keys = snapshot.keys();
 

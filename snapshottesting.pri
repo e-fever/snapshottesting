@@ -1,5 +1,6 @@
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
+QML_IMPORT_PATH += $$PWD/qml
 
 QT       += qml-private qml quick
 
