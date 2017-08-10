@@ -25,6 +25,8 @@ namespace SnapshotTesting {
 
         QString obtainComponentNameByQuickClass(QObject* object);
 
+        QString obtainComponentNameByCurrentScopeContext(QObject* object);
+
         QString obtainRootComponentName(QObject* object, bool expandAll = false);
     }
 }

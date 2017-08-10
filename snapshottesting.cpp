@@ -190,6 +190,15 @@ QString SnapshotTesting::Private::obtainComponentNameByInheritedContext(QObject 
     return res;
 }
 
+QString SnapshotTesting::Private::obtainComponentNameByCurrentScopeContext(QObject *object)
+{
+    QQmlContext * context = obtainCurrentScopeContext(object);
+    if (context) {
+        return obtainComponentNameByBaseUrl(context->baseUrl());
+    } else {
+        return obtainComponentNameByQuickClass(object);
+    }
+}
 
 QString SnapshotTesting::Private::obtainComponentNameByClass(QObject *object)
 {
@@ -326,7 +335,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
 
         if (object == source) {
             header.name = SnapshotTesting::Private::obtainRootComponentName(object, options.expandAll);
-            QString contextName = obtainComponentNameByBaseUrl(obtainCurrentScopeContext(object)->baseUrl());
+            QString contextName = obtainComponentNameByCurrentScopeContext(object);
             if (header.name != contextName) {
                 header.comment = contextName;
             }
@@ -343,6 +352,14 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         }
 
         header.name = result;
+        if (options.expandAll) {
+            QString comment = obtainComponentNameByClass(object);
+            if (header.name != comment &&
+               !comment.isNull() &&
+               comment != obtainComponentNameByQuickClass(object)) {
+               header.comment = comment;
+            }
+        }
 
         return header;
     };
