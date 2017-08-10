@@ -45,6 +45,7 @@ static QMap<QString,QString> classNameToItemNameTable;
 
 static QMap<QString, QVariantMap> defaultValueMap;
 static QMap<QString, QStringList> ignoreListMap;
+static QList<int> ignoreVariantType;
 
 #define DEHYDRATE_FONT(dest, property, original, current, field) \
     if (original.field() != current.field()) { \
@@ -518,7 +519,9 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
                 continue;
             }
 
-            if (value.type() == QVariant::Font) {
+            if (ignoreVariantType.indexOf(value.userType()) >= 0) {
+                continue;
+            } else if (value.type() == QVariant::Font) {
                 _dehydrateFont(dest, stringName, defaultValues[stringName].value<QFont>(), value.value<QFont>());
                 continue;
             } else if (value.canConvert<QObject*>()) {
@@ -669,6 +672,9 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
         } else if (v.type() == QVariant::Size) {
             QSize size = v.toSize();
             res = QString("%1: Qt.size(%2,%3)").arg(field).arg(size.width()).arg(size.height());
+        } else if (v.type() == QVariant::RectF) {
+            QRectF rect = v.toRectF();
+            res = QString("%1: Qt.rect(%2,%3,%4,%5)").arg(field).arg(rect.x()).arg(rect.y()).arg(rect.width()).arg(rect.height());
         } else {
             qDebug() << "Non-supported type" << v.typeName() << " Field :" << field;
             return QString("");
@@ -942,6 +948,8 @@ static void init() {
         defaultValueMap[key] = record["defaultValues"].toMap();
         ignoreListMap[key] = record["ignoreList"].toStringList();
     }
+
+    ignoreVariantType << qMetaTypeId<QQmlListProperty<QQuickItem>>() << qMetaTypeId<QQmlListProperty<QObject>>() << qMetaTypeId<QByteArray>();
 }
 
 
