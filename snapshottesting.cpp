@@ -645,6 +645,18 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
 
     priorityFields << "objectName" << "x" << "y" << "width" << "height";
 
+    auto numberToString = [](qreal value) {
+        QString res;
+        double intpart;
+        double fractpart = modf(value, &intpart);
+        if (fractpart != 0) {
+            res = QString("%1").arg(value,0,'f',2,'0');
+        } else {
+            res = QString("%1").arg((int) value);
+        }
+        return res;
+    };
+
     auto _prettyField = [=](QString field, QVariant v, int indent) {
         QString res;
         QString format = "%1: %2";
@@ -653,14 +665,7 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
         if (v.type() == QVariant::Bool) {
             res = QString(format).arg(field).arg(v.toBool() ? "true" : "false");
         } else if (v.type() == QVariant::Double) {
-            double dv = v.toDouble();
-            double intpart;
-            double fractpart = modf(dv, &intpart);
-            if (fractpart != 0) {
-                res = QString(format).arg(field).arg(dv,0,'f',2,'0');
-            } else {
-                res = QString(format).arg(field).arg(v.toInt());
-            }
+            res = QString(format).arg(field).arg(numberToString(v.toDouble()));
         } else if (v.type() == QVariant::String) {
             res = QString(quotedFormat).arg(field).arg(v.toString());
         } else if (v.type() == QVariant::Int) {
@@ -672,9 +677,12 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
         } else if (v.type() == QVariant::Size) {
             QSize size = v.toSize();
             res = QString("%1: Qt.size(%2,%3)").arg(field).arg(size.width()).arg(size.height());
+        } else if (v.type() == QVariant::SizeF) {
+            QSizeF size = v.toSizeF();
+            res = QString("%1: Qt.size(%2,%3)").arg(field).arg(numberToString(size.width())).arg(numberToString(size.height()));
         } else if (v.type() == QVariant::RectF) {
             QRectF rect = v.toRectF();
-            res = QString("%1: Qt.rect(%2,%3,%4,%5)").arg(field).arg(rect.x()).arg(rect.y()).arg(rect.width()).arg(rect.height());
+            res = QString("%1: Qt.rect(%2,%3,%4,%5)").arg(field).arg(numberToString(rect.x())).arg(numberToString(rect.y())).arg(numberToString(rect.width())).arg(numberToString(rect.height()));
         } else {
             qDebug() << "Non-supported type" << v.typeName() << " Field :" << field;
             return QString("");
@@ -949,7 +957,10 @@ static void init() {
         ignoreListMap[key] = record["ignoreList"].toStringList();
     }
 
-    ignoreVariantType << qMetaTypeId<QQmlListProperty<QQuickItem>>() << qMetaTypeId<QQmlListProperty<QObject>>() << qMetaTypeId<QByteArray>();
+    ignoreVariantType << qMetaTypeId<QQmlListProperty<QQuickItem>>()
+                      << qMetaTypeId<QQmlListProperty<QObject>>()
+                      << qMetaTypeId<QByteArray>()
+                      << qMetaTypeId<void*>();
 }
 
 
