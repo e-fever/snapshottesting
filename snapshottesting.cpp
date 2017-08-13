@@ -385,9 +385,10 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         QStringList packages;
         packages << "import QtQuick 2.0";
         packages << "import QtQuick.Layouts 1.1";
+        packages << "import QtQml.Models 2.1";
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
-        packages << "import QtQuick.Controls 2.0";
+        packages << "import QtQuick.Controls 2.1";
 #endif
 
         QString qml  = QString("%2\n %1 {}").arg(itemName).arg(packages.join("\n"));

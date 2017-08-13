@@ -46,7 +46,9 @@
             "transformOriginPoint",
             "childrenRect",
             "status",
-            "baseline"
+            "baseline",
+            "focus",
+            "activeFocus"
         ]
     },
     "QQuickRectangle": {
