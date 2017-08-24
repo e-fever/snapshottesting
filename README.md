@@ -5,9 +5,9 @@ This project is a library to offer snapshot testing for QML as a tool to make su
 
 Quoted from [Snapshot Testing · Jest](https://facebook.github.io/jest/docs/snapshot-testing.html) :
 
->> A typical snapshot test case for a mobile app renders a UI component, takes a screenshot, then compares it to a reference image stored alongside the test. The test will fail if the two images do not match: either the change is unexpected, or the screenshot needs to be updated to the new version of the UI component.
+> A typical snapshot test case for a mobile app renders a UI component, takes a screenshot, then compares it to a reference image stored alongside the test. The test will fail if the two images do not match: either the change is unexpected, or the screenshot needs to be updated to the new version of the UI component.
 
->> A similar approach can be taken when it comes to testing your React components. Instead of rendering the graphical UI, which would require building the entire app, you can use a test renderer to quickly generate a serializable value for your React tree.
+> A similar approach can be taken when it comes to testing your React components. Instead of rendering the graphical UI, which would require building the entire app, you can use a test renderer to quickly generate a serializable value for your React tree.
 
 The concept of this project is similar, but it replaces React component by a QObject/QQuickItem instance then convert to a text representation looks similar to QML. Then it compares with the previously stored snapshot. If the snapshots do not match, this library will prompt a dialog to ask the user for confirmation. If the changes are unexcepted, press "No" and will turn the test case fails. Otherwise, pressing "yes" will update the snapshot according to the latest version of the UI component.
 
@@ -88,6 +88,11 @@ Once the snapshots file is created, this UI will not prompt again unless there h
 
 ![snapshottesting-2.png (655×549)](https://raw.githubusercontent.com/benlau/junkcode/master/docs/snapshottesting-2.png)
 
+Reference Articles
+------------------
+
+1. [QML Snapshot Testing with TDD – E-Fever – Medium](https://medium.com/e-fever/qml-snapshot-testing-with-tdd-aba81441c52)
+1. [QML Snapshot Testing與TDD的連㩗](http://benlaux.blogspot.hk/2017/08/qml-snapshot-testingtdd_6.html) [Chinese]
 
 Text Representation
 -------------------
