@@ -155,7 +155,24 @@ Compare the input snapshot to the previously stored snapshot with the name. If t
 C++ API
 -------
 
-TODO
+Header
+
+```C++
+#include <snapshottesting.h>
+```
+
+```
+void SnapshotTesting::setSnapshotsFile(const QString &file) [static]
+```
+
+Set the snapshot file to be saved.
+
+```C++
+void SnapshotTesting::setInteractiveEnabled(bool value) [static]
+```
+
+If it is set to false, it won't prompt the GUI matcher even the snapshot is not matched.
+
 
 FAQ
 ----
