@@ -82,7 +82,7 @@ In the first time execution, it has no any previously saved snapshot. It will pr
 
 ![snapshottesting-1.png (1159×552)](https://raw.githubusercontent.com/benlau/junkcode/master/docs/snapshottesting-1.png)
 
-In you press "No", it will throw an exception to let the test case fails. You should press "Yes" and the snaphosts will be stored.
+If you press "No", it will throw an exception to let the test case fails. You should press "Yes" and the snaphosts will be stored.
 
 Once the snapshots file is created, this UI will not prompt again unless there have changed. For example, if it modify item height from 320 to 180. And run the porgramme again. It will show:
 
