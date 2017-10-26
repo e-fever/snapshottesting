@@ -698,7 +698,7 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
             return QString("");
         }
 
-        res = QString("").fill(' ', indent) + res;
+        res = indentText(res, indent);
 
         return res;
     };
@@ -1015,6 +1015,35 @@ QString SnapshotTesting::Private::stringify(QJSEngine *engine, QJSValue value)
     QJSValue result = program.call(arguments);
 
     return result.toString();
+}
+
+
+QString SnapshotTesting::Private::leftpad(QString text, int pad)
+{
+    return QString("").fill(' ', pad) + text;
+}
+
+QString SnapshotTesting::Private::indentText(QString text, int pad)
+{
+    if (text.indexOf("\n") < 0) {
+        return leftpad(text, pad);
+    }
+
+    QStringList lines = text.split("\n");
+
+    QString first = lines[0];
+
+    int index = first.indexOf(":");
+
+    QStringList indentedLines;
+
+    indentedLines << leftpad(first, pad);
+
+    for (int i = 1 ; i < lines.size();i++) {
+        indentedLines << leftpad(lines[i], pad + index);
+    }
+
+    return indentedLines.join("\n");
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

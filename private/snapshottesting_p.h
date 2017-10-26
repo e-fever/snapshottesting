@@ -31,5 +31,9 @@ namespace SnapshotTesting {
         QString obtainRootComponentName(QObject* object, bool expandAll = false);
 
         QString stringify(QJSEngine*engine, QJSValue value);
+
+        QString leftpad(QString text, int pad);
+
+        QString indentText(QString text, int pad);
     }
 }
