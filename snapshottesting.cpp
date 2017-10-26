@@ -576,44 +576,12 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
 
         dest = _dehydrate(object);
 
-        QObjectList children = object->children();
+        QObjectList children = obtainChildrenObjectList(object);
         QVariantList childrenDataList;
-        for (int i = 0 ; i < children.size() ; i++) {
-            QObject* child = children[i];
+
+        foreach (QObject* child, children) {
             QVariantMap childData = travel(child);
-            if (!childData.isEmpty()) {
-                childrenDataList << childData;
-            }
-        }
-
-        QString className = removeDynamicClassSuffix(obtainClassName(object));
-
-        if (className == "QQuickRepeater") {
-            int count = object->property("count").toInt();
-            for (int i = 0 ; i < count; i++) {
-                QQuickItem* child;
-                QMetaObject::invokeMethod(object,"itemAt",Qt::DirectConnection,
-                                          Q_RETURN_ARG(QQuickItem*,child),
-                                          Q_ARG(int,i));
-                QVariantMap childData = travel(child);
-                if (!childData.isEmpty()) {
-                    childrenDataList << childData;
-                }
-            }
-        } else if (inherited(object, "QQuickFlickable")) {
-
-            QQuickItem* contentItem = object->property("contentItem").value<QQuickItem*>();
-
-            if (contentItem) {
-                QList<QQuickItem *>items = contentItem->childItems() ;
-
-                for (int i = 0 ;  i < items.size() ; i++) {
-                    QVariantMap childData = travel(items.at(i));
-                    if (!childData.isEmpty()) {
-                        childrenDataList << childData;
-                    }
-                }
-            }
+            childrenDataList << childData;
         }
 
         if (childrenDataList.size() > 0) {
@@ -1070,5 +1038,39 @@ QString SnapshotTesting::Private::indentText(QString text, int pad)
     return indentedLines.join("\n");
 }
 
+
+
+
+QObjectList SnapshotTesting::Private::obtainChildrenObjectList(QObject *object)
+{
+    QObjectList children = object->children();
+
+    QString className = removeDynamicClassSuffix(obtainClassName(object));
+
+    if (className == "QQuickRepeater") {
+        int count = object->property("count").toInt();
+        for (int i = 0 ; i < count; i++) {
+            QQuickItem* child;
+            QMetaObject::invokeMethod(object,"itemAt",Qt::DirectConnection,
+                                      Q_RETURN_ARG(QQuickItem*,child),
+                                      Q_ARG(int,i));
+
+            children << child;
+        }
+    } else if (inherited(object, "QQuickFlickable")) {
+
+        QQuickItem* contentItem = object->property("contentItem").value<QQuickItem*>();
+
+        if (contentItem) {
+            QList<QQuickItem *>items = contentItem->childItems() ;
+
+            for (int i = 0 ;  i < items.size() ; i++) {
+                children << items.at(i);
+            }
+        }
+    }
+
+    return children;
+}
 
 Q_COREAPP_STARTUP_FUNCTION(init)

@@ -37,5 +37,7 @@ namespace SnapshotTesting {
         QString leftpad(QString text, int pad);
 
         QString indentText(QString text, int pad);
+
+        QObjectList obtainChildrenObjectList(QObject * object);
     }
 }
