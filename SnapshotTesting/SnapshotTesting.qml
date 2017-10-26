@@ -13,7 +13,7 @@ Item {
 
     function matchStoredSnapshot(name, snapshot) {
         if (!Adapter.matchStoredSnapshot(name,snapshot)) {
-            throw new Error("matchStoredSnapshot: Snapshot does not match with stored snapshot");
+            throw new Error("matchStoredSnapshot: Current snapshot does not match with stored snapshot");
         }
     }
 

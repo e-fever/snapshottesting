@@ -530,13 +530,11 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
                 // ignore object value
                 continue;
             } else if (value.userType() == qMetaTypeId<QJSValue>()) {
-                QJSEngine* engine = qjsEngine(object);
-                if (!engine) {
-                    qWarning() << "Warning! SnapshotTesting can not process QJSValue if QJSEngine is not present";
+                QJSValue jsValue = value.value<QJSValue>();
+                if (jsValue.isQObject() || jsValue.isQMetaObject()) {
                     continue;
                 }
-
-                value = SnapshotTesting::Private::stringify(engine, value.value<QJSValue>());
+                value = jsValue.toVariant();
             }
 
             dest[stringName] = value;
@@ -694,6 +692,8 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
         } else if (v.type() == QVariant::RectF) {
             QRectF rect = v.toRectF();
             res = QString("%1: Qt.rect(%2,%3,%4,%5)").arg(field).arg(numberToString(rect.x())).arg(numberToString(rect.y())).arg(numberToString(rect.width())).arg(numberToString(rect.height()));
+        } else if (v.type() == QVariant::Map || v.type() == QVariant::List) {
+            res = QString(format).arg(field).arg(stringify(v));
         } else {
             qDebug() << "Non-supported type" << v.typeName() << " Field :" << field;
             return QString("");
@@ -1020,6 +1020,27 @@ QString SnapshotTesting::Private::stringify(QJSEngine *engine, QJSValue value)
     return result.toString();
 }
 
+QString SnapshotTesting::Private::stringify(QVariant value)
+{
+    QJSEngine engine;
+    QString code = "function(value, indent) { return JSON.stringify(value,null,indent)}";
+    QJSValue program = engine.evaluate(code);
+
+    QJSValue input;
+
+    if (value.type() == QVariant::Map || value.type() == QVariant::List) {
+         input = engine.toScriptValue<QVariant>(value);
+    } else {
+        return "";
+    }
+
+    QJSValueList arguments;
+    arguments << input << 4;
+
+    QJSValue result = program.call(arguments);
+    return result.toString();
+}
+
 
 QString SnapshotTesting::Private::leftpad(QString text, int pad)
 {
@@ -1048,5 +1069,6 @@ QString SnapshotTesting::Private::indentText(QString text, int pad)
 
     return indentedLines.join("\n");
 }
+
 
 Q_COREAPP_STARTUP_FUNCTION(init)

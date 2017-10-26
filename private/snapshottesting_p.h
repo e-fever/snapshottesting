@@ -32,6 +32,8 @@ namespace SnapshotTesting {
 
         QString stringify(QJSEngine*engine, QJSValue value);
 
+        QString stringify(QVariant v);
+
         QString leftpad(QString text, int pad);
 
         QString indentText(QString text, int pad);
