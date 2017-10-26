@@ -32,7 +32,8 @@ DISTFILES +=     qpm.json     \
     sample/Sample6.qml \
     sample/Sample7.qml \
     sample/Sample8.qml \
-    sample/Sample9.qml
+    sample/Sample9.qml \
+    sample/Sample_QJSValue.qml
 
 HEADERS += \    
     snapshottests.h

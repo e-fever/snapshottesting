@@ -528,6 +528,14 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             } else if (value.canConvert<QObject*>()) {
                 // ignore object value
                 continue;
+            } else if (value.userType() == qMetaTypeId<QJSValue>()) {
+                QJSEngine* engine = qjsEngine(object);
+                if (!engine) {
+                    qWarning() << "Warning! SnapshotTesting can not process QJSValue if QJSEngine is not present";
+                    continue;
+                }
+
+                value = SnapshotTesting::Private::stringify(engine, value.value<QJSValue>());
             }
 
             dest[stringName] = value;
@@ -646,6 +654,7 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
 
     priorityFields << "objectName" << "x" << "y" << "width" << "height";
 
+    /// Convert num to string
     auto numberToString = [](qreal value) {
         QString res;
         double intpart;
@@ -993,6 +1002,19 @@ QString SnapshotTesting::diff(QString original, QString current)
     diff.printUnifiedFormat(stream);
 
     return QString::fromStdString(stream.str());
+}
+
+QString SnapshotTesting::Private::stringify(QJSEngine *engine, QJSValue value)
+{
+    QString code = "function(value, indent) { return JSON.stringify(value,null,indent)}";
+    QJSValue program = engine->evaluate(code);
+
+    QJSValueList arguments;
+    arguments << value << 4;
+
+    QJSValue result = program.call(arguments);
+
+    return result.toString();
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

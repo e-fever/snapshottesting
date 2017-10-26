@@ -31,6 +31,14 @@ Item {
         id: sample8
     }
 
+    Sample9 {
+        id: sample9
+    }
+
+    Sample_QJSValue {
+        id: sample_qjsvalue
+    }
+
     TestCase {
         name: "SnapshotTesting"
         when: windowShown
@@ -42,7 +50,9 @@ Item {
                 "sample5": sample5,
                 "sample6": sample6,
                 "sample7": sample7,
-                "sample8": sample8
+                "sample8": sample8,
+                "sample9": sample9,
+                "sample_qjsvalue": sample_qjsvalue
             }
 
             for (var name in objects) {

@@ -1,5 +1,6 @@
 #pragma once
 #include <QQmlContext>
+#include <QJSValue>
 
 namespace SnapshotTesting {
 
@@ -14,7 +15,7 @@ namespace SnapshotTesting {
 
         QString obtainComponentNameByBaseUrl(const QUrl& baseUrl);
 
-        /// Obtain the name of the component by the creation context (the bottom most component
+        /// Obtain the name of the component by the creation context (the bottom most component)
         QString obtainComponentNameByBaseContext(QObject* object);
 
         QString obtainComponentNameByInheritedContext(QObject * object);
@@ -28,5 +29,7 @@ namespace SnapshotTesting {
         QString obtainComponentNameByCurrentScopeContext(QObject* object);
 
         QString obtainRootComponentName(QObject* object, bool expandAll = false);
+
+        QString stringify(QJSEngine*engine, QJSValue value);
     }
 }
