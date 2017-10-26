@@ -12,6 +12,8 @@ Item {
 
     property url screenshot: ""
 
+    property string monospaceFont: ""
+
     TabView {
         anchors.fill: parent
         anchors.bottomMargin: 40
@@ -20,6 +22,7 @@ Item {
             title: "Diff"
             Item {
                 TextArea {
+                    font.family: monospaceFont
                     anchors.fill: parent
                     text: diff
                 }
@@ -30,6 +33,7 @@ Item {
             title: "Stored Snapshot"
             Item {
                 TextArea {
+                    font.family: monospaceFont
                     anchors.fill: parent
                     text: originalVersion
                 }
@@ -40,6 +44,7 @@ Item {
             title: "Current Snapshot"
             Item {
                 TextArea {
+                    font.family: monospaceFont
                     anchors.fill: parent
                     text: currentVersion
                 }

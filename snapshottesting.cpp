@@ -26,6 +26,7 @@ using namespace std;
 #include <sstream>
 #include <cmath>
 #include <vector>
+#include <QFontDatabase>
 #include "dtl/Sequence.hpp"
 #include "dtl/Lcs.hpp"
 #include "dtl/variables.hpp"
@@ -915,6 +916,8 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
         QObject* dialog = engine.rootObjects()[0];
         Q_ASSERT(dialog);
 
+        QString monospaceFont =  QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
+        dialog->setProperty("monospaceFont" ,monospaceFont);
         dialog->setProperty("diff", diff);
         dialog->setProperty("previousSnapshot", originalVersion);
         dialog->setProperty("snapshot", snapshot);
@@ -1040,7 +1043,7 @@ QString SnapshotTesting::Private::indentText(QString text, int pad)
     indentedLines << leftpad(first, pad);
 
     for (int i = 1 ; i < lines.size();i++) {
-        indentedLines << leftpad(lines[i], pad + index);
+        indentedLines << leftpad(lines[i], pad + index + 2);
     }
 
     return indentedLines.join("\n");
