@@ -41,6 +41,8 @@ namespace SnapshotTesting {
 
     bool ignoreAll();
 
+    bool waitForLoaded(QObject* object, int timeout = 60000);
+
     QString diff(QString original, QString current);
 
     QString capture(QObject* object, Options options = Options());

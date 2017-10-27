@@ -1,4 +1,4 @@
-QT       += testlib qml
+QT       += testlib qml concurrent
 
 TARGET = snapshottesting
 CONFIG   += console
@@ -33,7 +33,8 @@ DISTFILES +=     qpm.json     \
     sample/Sample7.qml \
     sample/Sample8.qml \
     sample/Sample9.qml \
-    sample/Sample_QJSValue.qml
+    sample/Sample_QJSValue.qml \
+    sample/Sample_Loader_Async.qml
 
 HEADERS += \    
     snapshottests.h

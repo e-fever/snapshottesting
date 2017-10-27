@@ -10,12 +10,13 @@
 #include <QQmlComponent>
 #include <QQuickItem>
 #include <QBuffer>
+#include <asyncfuture.h>
 #include "snapshottesting.h"
 #include <private/qqmldata_p.h>
 #include <private/qqmlcontext_p.h>
 #include <private/snapshottesting_p.h>
+#include <aconcurrent.h>
 #include <functional>
-
 
 using namespace SnapshotTesting;
 using namespace SnapshotTesting::Private;
@@ -368,6 +369,10 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
 
     auto obtainDynamicGeneratedDefaultValuesMapByClassName = [=](QString className) {
         static QMap<QString, QVariantMap> autoDefaultValueMap;
+
+        if (className == "QQuickLoader") {
+            return QVariantMap();
+        }
 
         if (autoDefaultValueMap.contains(className)) {
             return autoDefaultValueMap[className];
@@ -1071,6 +1076,163 @@ QObjectList SnapshotTesting::Private::obtainChildrenObjectList(QObject *object)
     }
 
     return children;
+}
+
+bool SnapshotTesting::waitForLoaded(QObject *object, int timeout)
+{
+    typedef enum  {
+        Null,
+        Ready,
+        Loading,
+        Error
+    } LoaderStatus;
+
+    class Proxy : public QObject {
+    public:
+        Proxy(QObject* parent) : QObject(parent) {
+        }
+
+        std::function<void()> callback;
+        QPointer<QObject> sender;
+
+        void bind(QObject* source, QString signal) {
+            sender = source;
+
+            const int memberOffset = QObject::staticMetaObject.methodCount();
+
+            int index = source->metaObject()->indexOfSignal(signal.toUtf8().constData());
+            QMetaMethod method = source->metaObject()->method(index);
+
+            auto conn = QMetaObject::connect(source, method.methodIndex(), this, memberOffset, Qt::QueuedConnection, 0);
+
+            if (!conn) {
+                qWarning() << "SnapshotTesting::Private::Proxy: Failed to bind signal";
+            }
+        }
+
+        int qt_metacall(QMetaObject::Call _c, int _id, void **_a) {
+            int methodId = QObject::qt_metacall(_c, _id, _a);
+
+            if (methodId < 0) {
+                return methodId;
+            }
+
+            if (_c == QMetaObject::InvokeMetaMethod) {
+                if (methodId == 0) {
+                    callback();
+                }
+            }
+            return methodId;
+        }
+    };
+
+
+    auto awaitLoader = [=](QObject* object) mutable {
+        auto defer = AsyncFuture::deferred<void>();
+
+        Proxy *proxy = new Proxy(object);
+        proxy->bind(object, SIGNAL(onStatusChanged()));
+        proxy->callback = [=]() mutable {
+            int status = object->property("status").toInt();
+            if (status != Loading) {
+                defer.complete();
+                delete proxy;
+            }
+        };
+
+        return defer.future();
+    };
+
+    QList<QFuture<void>> futures;
+
+    walk(object, [&](QObject* object, QObject* parent) {
+
+        QString className = removeDynamicClassSuffix(obtainClassName(object));
+
+        if (className == "QQuickLoader") {
+            bool asynchronous = object->property("asynchronous").toBool();
+            int status = object->property("status").toInt();
+
+            if (asynchronous && status == Loading) {
+                futures << awaitLoader(object);
+            }
+        }
+
+        return true;
+    });
+
+    if (futures.size() == 0) {
+        return true;
+    }
+
+    auto combinator = AsyncFuture::combine();
+    for (int i = 0 ; i < futures.size() ;i++) {
+        combinator << futures[i];
+    }
+
+    AConcurrent::await(combinator.future());
+
+    return true;
+}
+
+void SnapshotTesting::Private::walk(QObject *object, std::function<bool (QObject *, QObject *)> predicate)
+{
+    QMap<QObject*, bool> map;
+
+    std::function<bool(QObject*, QObject*)> _walk;
+
+    _walk = [&](QObject* object, QObject* parent) -> bool {
+
+        if (!object || map[object]) {
+            return true;
+        }
+
+        map[object] = true;
+
+        if (!predicate(object, parent)) {
+            return false;
+        }
+
+        if (inherited(object,"QQuickRepeater")) {
+            int count = object->property("count").toInt();
+
+            for (int i = 0 ;  i < count ;i++) {
+                QQuickItem* item;
+                QMetaObject::invokeMethod(object,"itemAt",Qt::DirectConnection,
+                                          Q_RETURN_ARG(QQuickItem*,item),
+                                          Q_ARG(int,i));
+
+                if (!_walk(item, object)) {
+                    return false;
+                }
+            }
+
+        } else if (inherited(object, "QQuickFlickable") || inherited(object, "QQuickWindow")) {
+
+            QQuickItem* contentItem = object->property("contentItem").value<QQuickItem*>();
+
+            if (contentItem) {
+                QList<QQuickItem *>items = contentItem->childItems() ;
+                for (int i = 0 ;  i < items.size() ; i++) {
+                    if (!_walk(items.at(i) , object)){
+                        return false;
+                    }
+                }
+            }
+        }
+
+        QObjectList children = object->children();
+
+        for (int i = 0 ; i < children.size();i++) {
+            if (!_walk(children.at(i), object)) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    _walk(object, 0);
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)
