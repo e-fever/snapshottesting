@@ -37,9 +37,9 @@ namespace SnapshotTesting {
 
     bool interactiveEnabled();
 
-    void setIgnoreAll(bool value);
+    void setIgnoreAllMismatched(bool value);
 
-    bool ignoreAll();
+    bool ignoreAllMismatched();
 
     bool waitForLoaded(QObject* object, int timeout = 60000);
 

@@ -39,8 +39,8 @@ static QString m_snapshotFile;
 static QVariantMap m_snapshots;
 static bool m_snapshotsDirty = false;
 static bool m_interactiveEnabled = true;
-static bool m_ignoreAll = false;
-static bool m_acceptAll = false;
+static bool m_ignoreAllMismatched = false;
+static bool m_acceptAllMismatched = false;
 
 static QStringList knownComponentList;
 static QMap<QString,QString> classNameToItemNameTable;
@@ -843,14 +843,14 @@ bool SnapshotTesting::interactiveEnabled()
     return m_interactiveEnabled;
 }
 
-void SnapshotTesting::setIgnoreAll(bool value)
+void SnapshotTesting::setIgnoreAllMismatched(bool value)
 {
-    m_ignoreAll = value;
+    m_ignoreAllMismatched = value;
 }
 
-bool SnapshotTesting::ignoreAll()
+bool SnapshotTesting::ignoreAllMismatched()
 {
-    return m_ignoreAll;
+    return m_ignoreAllMismatched;
 }
 
 
@@ -875,13 +875,13 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
     qDebug().noquote() << "matchStoredSnapshot: The snapshot is different:";
     qDebug().noquote() << diff;
 
-    if (m_acceptAll) {
+    if (m_acceptAllMismatched) {
         SnapshotTesting::setSnapshot(name, snapshot);
         SnapshotTesting::saveSnapshots();
         return true;
     }
 
-    if (SnapshotTesting::interactiveEnabled() && !SnapshotTesting::ignoreAll()) {
+    if (SnapshotTesting::interactiveEnabled() && !SnapshotTesting::ignoreAllMismatched()) {
         QQmlApplicationEngine engine;
         engine.addImportPath("qrc:///");
         engine.load(QUrl("qrc:///qt-project.org/imports/SnapshotTesting/Matcher.qml"));
@@ -903,10 +903,10 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
         switch (button) {
         // Use hex code to avoid the dependence to QtWidget
         case 0x00020000: // No to all
-            SnapshotTesting::setIgnoreAll(true);
+            SnapshotTesting::setIgnoreAllMismatched(true);
             break;
         case 0x00008000: // Yes to all
-            m_acceptAll = true;
+            m_acceptAllMismatched = true;
         case 0x00004000: // Yes
         case 0x02000000:
             SnapshotTesting::setSnapshot(name, snapshot);
