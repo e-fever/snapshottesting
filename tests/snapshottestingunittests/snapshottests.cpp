@@ -145,6 +145,39 @@ void SnapshotTests::test_SnapshotTesting_saveSnapshots()
     SnapshotTesting::saveSnapshots();
 }
 
+void SnapshotTests::test_SnapshotTesting_addComponentIgnoredProperty()
+{
+    QString input = QtShell::realpath_strip(SRCDIR, "sample/Sample1.qml");
+
+
+    QQmlApplicationEngine engine;
+    QUrl url = QUrl::fromLocalFile(input);
+
+    QQmlComponent component(&engine,url);
+    QQuickItem *childItem = qobject_cast<QQuickItem*>(component.create());
+    QVERIFY(childItem);
+
+    QString name, text;
+
+    name = QString("%1_default").arg(QTest::currentTestFunction());
+
+    text = SnapshotTesting::capture(childItem);
+    QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
+
+    SnapshotTesting::addComponentIgnoredProperty("QQuickRectangle", "width");
+    name = QString("%1_set").arg(QTest::currentTestFunction());
+
+    text = SnapshotTesting::capture(childItem);
+    QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
+
+
+    SnapshotTesting::removeComponentIgnoredProperty("QQuickRectangle", "width");
+    name = QString("%1_default").arg(QTest::currentTestFunction());
+
+    text = SnapshotTesting::capture(childItem);
+    QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
+}
+
 void SnapshotTests::test_SnapshotTesting_capture_QObject()
 {
     QObject object;

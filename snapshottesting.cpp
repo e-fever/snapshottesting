@@ -45,9 +45,13 @@ static bool m_acceptAllMismatched = false;
 static QStringList knownComponentList;
 static QMap<QString,QString> classNameToItemNameTable;
 
-static QMap<QString, QVariantMap> defaultValueMap;
-static QMap<QString, QStringList> ignoreListMap;
-static QList<int> ignoreVariantType;
+/// The default values of components
+static QMap<QString, QVariantMap> componentDefaultValues;
+
+static QMap<QString, QStringList> componentIgnoredProperties;
+
+/// List of data type should not be processed in term of their meta type id
+static QList<int> forbiddenDataTypeList;
 
 #define DEHYDRATE_FONT(dest, property, original, current, field) \
     if (original.field() != current.field()) { \
@@ -448,8 +452,8 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             QString className = classes.takeLast();
             QList<QVariantMap> pending;
             pending << obtainDynamicGeneratedDefaultValuesMapByClassName(className);
-            if (defaultValueMap.contains(className)) {
-                pending << defaultValueMap[className];
+            if (componentDefaultValues.contains(className)) {
+                pending << componentDefaultValues[className];
             }
 
             for (int i = 0 ; i < pending.size(); i++) {
@@ -469,8 +473,8 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         QStringList result;
         while (meta != 0) {
             QString className = meta->className();
-            if (ignoreListMap.contains(className)) {
-                QStringList list = ignoreListMap[className];
+            if (componentIgnoredProperties.contains(className)) {
+                QStringList list = componentIgnoredProperties[className];
                 result.append(list);
             }
 
@@ -526,7 +530,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
                 continue;
             }
 
-            if (ignoreVariantType.indexOf(value.userType()) >= 0) {
+            if (forbiddenDataTypeList.indexOf(value.userType()) >= 0) {
                 continue;
             } else if (value.type() == QVariant::Font) {
                 _dehydrateFont(dest, stringName, defaultValues[stringName].value<QFont>(), value.value<QFont>());
@@ -939,11 +943,11 @@ static void init() {
         QString key = knownComponentList[i];
         QVariantMap record =  map[key].toMap();
         classNameToItemNameTable[key] = record["name"].toString();
-        defaultValueMap[key] = record["defaultValues"].toMap();
-        ignoreListMap[key] = record["ignoreList"].toStringList();
+        componentDefaultValues[key] = record["defaultValues"].toMap();
+        componentIgnoredProperties[key] = record["ignoreProperties"].toStringList();
     }
 
-    ignoreVariantType << qMetaTypeId<QQmlListProperty<QQuickItem>>()
+    forbiddenDataTypeList << qMetaTypeId<QQmlListProperty<QQuickItem>>()
                       << qMetaTypeId<QQmlListProperty<QObject>>()
                       << qMetaTypeId<QByteArray>()
                       << qMetaTypeId<void*>();
@@ -1233,6 +1237,23 @@ void SnapshotTesting::Private::walk(QObject *object, std::function<bool (QObject
     };
 
     _walk(object, 0);
+}
+
+
+void SnapshotTesting::addComponentIgnoredProperty(const QString &className, const QString &property)
+{
+    QStringList list = componentIgnoredProperties[className];
+    if (list.indexOf(property) < 0) {
+        list.append(property);
+    }
+    componentIgnoredProperties[className] = list;
+}
+
+void SnapshotTesting::removeComponentIgnoredProperty(const QString &className, const QString &property)
+{
+    QStringList list = componentIgnoredProperties[className];
+    list.removeAll(property);
+    componentIgnoredProperties[className] = list;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)
