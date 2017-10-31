@@ -41,7 +41,7 @@ namespace SnapshotTesting {
 
     bool ignoreAllMismatched();
 
-    bool waitForLoaded(QObject* object, int timeout = 60000);
+    bool waitForLoaded(QObject* object, int timeout = 10000);
 
     QString diff(QString original, QString current);
 
@@ -53,4 +53,12 @@ namespace SnapshotTesting {
 
     void removeClassIgnoredProperty(const QString &className , const QString& property);
 
+    class SignalProxy : public QObject {
+        Q_OBJECT
+    public:
+        inline SignalProxy(QObject* parent) : QObject(parent) {
+        }
+    signals:
+        void proxy();
+    };
 }

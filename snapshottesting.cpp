@@ -865,7 +865,6 @@ bool SnapshotTesting::ignoreAllMismatched()
     return m_ignoreAllMismatched;
 }
 
-
 QString SnapshotTesting::capture(QObject *object, SnapshotTesting::Options options)
 {
     QVariantMap data = dehydrate(object, options);
@@ -1055,9 +1054,6 @@ QString SnapshotTesting::Private::indentText(QString text, int pad)
     return indentedLines.join("\n");
 }
 
-
-
-
 QObjectList SnapshotTesting::Private::obtainChildrenObjectList(QObject *object)
 {
     QObjectList children = object->children();
@@ -1092,16 +1088,17 @@ QObjectList SnapshotTesting::Private::obtainChildrenObjectList(QObject *object)
 
 bool SnapshotTesting::waitForLoaded(QObject *object, int timeout)
 {
-    // @TODO - Implement timeout
-    typedef enum  {
-        Null,
-        Ready,
-        Loading,
-        Error
-    } LoaderStatus;
-
-    auto awaitLoader = [=](QObject* object) mutable {        
+    auto onStatusChanged = [=](QObject* object) mutable {
         return AsyncFuture::observe(object,SIGNAL(statusChanged())).future();
+    };
+
+    auto onImageStatusChanged = [=](QObject* object) mutable {
+        SignalProxy* proxy = new SignalProxy(object);
+        QObject::connect(object, SIGNAL(statusChanged(QQuickImageBase::Status)),
+                         proxy, SIGNAL(proxy()));
+        // A dirty hack to vvoid the "cannot queue arguments of type qquickimagebase::Status"
+
+        return AsyncFuture::observe(proxy,&SignalProxy::proxy).future();
     };
 
     QList<QFuture<void>> futures;
@@ -1114,9 +1111,18 @@ bool SnapshotTesting::waitForLoaded(QObject *object, int timeout)
         if (className == "QQuickLoader") {
             bool asynchronous = object->property("asynchronous").toBool();
             int status = object->property("status").toInt();
+            //@TODO - check is source / sourceComponent set?
 
-            if (asynchronous && status == Loading) {
-                futures << awaitLoader(object);
+            if (asynchronous && status == 2) { // Loading
+                futures << onStatusChanged(object);
+            }
+        } else if (className == "QQuickImage") {
+            bool asynchronous = object->property("asynchronous").toBool();
+            int status = object->property("status").toInt();
+            QString source = object->property("source").toString();
+
+            if (!source.isNull() && asynchronous && status == 2 ) { // Loading
+                futures << onImageStatusChanged(object);
             }
         }
 
@@ -1132,9 +1138,22 @@ bool SnapshotTesting::waitForLoaded(QObject *object, int timeout)
         combinator << futures[i];
     }
 
-    AConcurrent::await(combinator.future());
+    auto defer = AsyncFuture::deferred<void>();
+    defer.complete(combinator.future());
 
-    return true;
+    QTimer::singleShot(timeout, [=]() mutable {
+        defer.cancel();
+    });
+
+    auto future = defer.future();
+
+    AConcurrent::await(future);
+
+    if (future.isCanceled()) {
+        qDebug() << "Timeout!";
+    }
+
+    return !future.isCanceled();
 }
 
 void SnapshotTesting::Private::walk(QObject *object, std::function<bool (QObject *, QObject *)> predicate)
