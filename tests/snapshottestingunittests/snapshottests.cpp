@@ -164,14 +164,14 @@ void SnapshotTests::test_SnapshotTesting_addComponentIgnoredProperty()
     text = SnapshotTesting::capture(childItem);
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
 
-    SnapshotTesting::addComponentIgnoredProperty("QQuickRectangle", "width");
+    SnapshotTesting::addClassIgnoredProperty("QQuickRectangle", "width");
     name = QString("%1_set").arg(QTest::currentTestFunction());
 
     text = SnapshotTesting::capture(childItem);
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
 
 
-    SnapshotTesting::removeComponentIgnoredProperty("QQuickRectangle", "width");
+    SnapshotTesting::removeClassIgnoredProperty("QQuickRectangle", "width");
     name = QString("%1_default").arg(QTest::currentTestFunction());
 
     text = SnapshotTesting::capture(childItem);

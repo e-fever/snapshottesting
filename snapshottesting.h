@@ -49,8 +49,8 @@ namespace SnapshotTesting {
 
     bool matchStoredSnapshot(const QString& name, const QString& snapshot);
 
-    void addComponentIgnoredProperty(const QString &className , const QString& property);
+    void addClassIgnoredProperty(const QString &className , const QString& property);
 
-    void removeComponentIgnoredProperty(const QString &className , const QString& property);
+    void removeClassIgnoredProperty(const QString &className , const QString& property);
 
 }

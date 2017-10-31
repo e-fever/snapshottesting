@@ -35,6 +35,14 @@ using namespace std;
 #include "dtl/Ses.hpp"
 #include "dtl/Diff.hpp"
 
+/** Terminology
+ *
+ * Class - C++ Class
+ *
+ * Component - QML Component
+ *
+ */
+
 static QString m_snapshotFile;
 static QVariantMap m_snapshots;
 static bool m_snapshotsDirty = false;
@@ -43,7 +51,7 @@ static bool m_ignoreAllMismatched = false;
 static bool m_acceptAllMismatched = false;
 
 static QStringList knownComponentList;
-static QMap<QString,QString> classNameToItemNameTable;
+static QMap<QString,QString> classNameToComponentNameTable;
 
 /// The default values of components
 static QMap<QString, QVariantMap> componentDefaultValues;
@@ -85,7 +93,7 @@ static QString obtainKnownClassName(QObject* object) {
   const QMetaObject* meta = object->metaObject();
   QString res;
 
-  while (!classNameToItemNameTable.contains(res) && meta != 0) {
+  while (!classNameToComponentNameTable.contains(res) && meta != 0) {
       res =  SnapshotTesting::Private::classNameToComponentName(meta->className());
       meta = meta->superClass();
   }
@@ -217,7 +225,7 @@ QString SnapshotTesting::Private::obtainComponentNameByClass(QObject *object)
     if (result.isNull()) {
         QString knownClassName = obtainKnownClassName(object);
 
-        result = classNameToItemNameTable[knownClassName];
+        result = classNameToComponentNameTable[knownClassName];
     }
     return result;
 }
@@ -942,7 +950,7 @@ static void init() {
     for (int i = 0 ; i < knownComponentList.size() ; i++) {
         QString key = knownComponentList[i];
         QVariantMap record =  map[key].toMap();
-        classNameToItemNameTable[key] = record["name"].toString();
+        classNameToComponentNameTable[key] = record["name"].toString();
         componentDefaultValues[key] = record["defaultValues"].toMap();
         componentIgnoredProperties[key] = record["ignoreProperties"].toStringList();
     }
@@ -1150,6 +1158,7 @@ bool SnapshotTesting::waitForLoaded(QObject *object, int timeout)
     QList<QFuture<void>> futures;
 
     walk(object, [&](QObject* object, QObject* parent) {
+        Q_UNUSED(parent);
 
         QString className = removeDynamicClassSuffix(obtainClassName(object));
 
@@ -1197,38 +1206,10 @@ void SnapshotTesting::Private::walk(QObject *object, std::function<bool (QObject
             return false;
         }
 
-        if (inherited(object,"QQuickRepeater")) {
-            int count = object->property("count").toInt();
 
-            for (int i = 0 ;  i < count ;i++) {
-                QQuickItem* item;
-                QMetaObject::invokeMethod(object,"itemAt",Qt::DirectConnection,
-                                          Q_RETURN_ARG(QQuickItem*,item),
-                                          Q_ARG(int,i));
-
-                if (!_walk(item, object)) {
-                    return false;
-                }
-            }
-
-        } else if (inherited(object, "QQuickFlickable") || inherited(object, "QQuickWindow")) {
-
-            QQuickItem* contentItem = object->property("contentItem").value<QQuickItem*>();
-
-            if (contentItem) {
-                QList<QQuickItem *>items = contentItem->childItems() ;
-                for (int i = 0 ;  i < items.size() ; i++) {
-                    if (!_walk(items.at(i) , object)){
-                        return false;
-                    }
-                }
-            }
-        }
-
-        QObjectList children = object->children();
-
-        for (int i = 0 ; i < children.size();i++) {
-            if (!_walk(children.at(i), object)) {
+        QObjectList children = obtainChildrenObjectList(object);
+        foreach (QObject* child , children) {
+            if (!_walk(child, object)) {
                 return false;
             }
         }
@@ -1240,7 +1221,7 @@ void SnapshotTesting::Private::walk(QObject *object, std::function<bool (QObject
 }
 
 
-void SnapshotTesting::addComponentIgnoredProperty(const QString &className, const QString &property)
+void SnapshotTesting::addClassIgnoredProperty(const QString &className, const QString &property)
 {
     QStringList list = componentIgnoredProperties[className];
     if (list.indexOf(property) < 0) {
@@ -1249,7 +1230,7 @@ void SnapshotTesting::addComponentIgnoredProperty(const QString &className, cons
     componentIgnoredProperties[className] = list;
 }
 
-void SnapshotTesting::removeComponentIgnoredProperty(const QString &className, const QString &property)
+void SnapshotTesting::removeClassIgnoredProperty(const QString &className, const QString &property)
 {
     QStringList list = componentIgnoredProperties[className];
     list.removeAll(property);
