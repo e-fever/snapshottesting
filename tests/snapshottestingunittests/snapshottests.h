@@ -25,7 +25,7 @@ private slots:
 
     void test_SnapshotTesting_saveSnapshots();
 
-    void test_SnapshotTesting_addComponentIgnoredProperty();
+    void test_SnapshotTesting_addClassIgnoredProperty();
 
     void test_SnapshotTesting_capture_QObject();
 

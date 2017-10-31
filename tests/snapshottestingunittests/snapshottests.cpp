@@ -145,10 +145,9 @@ void SnapshotTests::test_SnapshotTesting_saveSnapshots()
     SnapshotTesting::saveSnapshots();
 }
 
-void SnapshotTests::test_SnapshotTesting_addComponentIgnoredProperty()
+void SnapshotTests::test_SnapshotTesting_addClassIgnoredProperty()
 {
     QString input = QtShell::realpath_strip(SRCDIR, "sample/Sample1.qml");
-
 
     QQmlApplicationEngine engine;
     QUrl url = QUrl::fromLocalFile(input);
@@ -162,19 +161,21 @@ void SnapshotTests::test_SnapshotTesting_addComponentIgnoredProperty()
     name = QString("%1_default").arg(QTest::currentTestFunction());
 
     text = SnapshotTesting::capture(childItem);
+    text.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
 
     SnapshotTesting::addClassIgnoredProperty("QQuickRectangle", "width");
     name = QString("%1_set").arg(QTest::currentTestFunction());
 
     text = SnapshotTesting::capture(childItem);
+    text.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
-
 
     SnapshotTesting::removeClassIgnoredProperty("QQuickRectangle", "width");
     name = QString("%1_default").arg(QTest::currentTestFunction());
 
     text = SnapshotTesting::capture(childItem);
+    text.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
 }
 

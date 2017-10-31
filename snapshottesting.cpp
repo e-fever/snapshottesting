@@ -1092,6 +1092,7 @@ QObjectList SnapshotTesting::Private::obtainChildrenObjectList(QObject *object)
 
 bool SnapshotTesting::waitForLoaded(QObject *object, int timeout)
 {
+    // @TODO - Implement timeout
     typedef enum  {
         Null,
         Ready,
@@ -1099,60 +1100,8 @@ bool SnapshotTesting::waitForLoaded(QObject *object, int timeout)
         Error
     } LoaderStatus;
 
-    class Proxy : public QObject {
-    public:
-        Proxy(QObject* parent) : QObject(parent) {
-        }
-
-        std::function<void()> callback;
-        QPointer<QObject> sender;
-
-        void bind(QObject* source, QString signal) {
-            sender = source;
-
-            const int memberOffset = QObject::staticMetaObject.methodCount();
-
-            int index = source->metaObject()->indexOfSignal(signal.toUtf8().constData());
-            QMetaMethod method = source->metaObject()->method(index);
-
-            auto conn = QMetaObject::connect(source, method.methodIndex(), this, memberOffset, Qt::QueuedConnection, 0);
-
-            if (!conn) {
-                qWarning() << "SnapshotTesting::Private::Proxy: Failed to bind signal";
-            }
-        }
-
-        int qt_metacall(QMetaObject::Call _c, int _id, void **_a) {
-            int methodId = QObject::qt_metacall(_c, _id, _a);
-
-            if (methodId < 0) {
-                return methodId;
-            }
-
-            if (_c == QMetaObject::InvokeMetaMethod) {
-                if (methodId == 0) {
-                    callback();
-                }
-            }
-            return methodId;
-        }
-    };
-
-
-    auto awaitLoader = [=](QObject* object) mutable {
-        auto defer = AsyncFuture::deferred<void>();
-
-        Proxy *proxy = new Proxy(object);
-        proxy->bind(object, SIGNAL(onStatusChanged()));
-        proxy->callback = [=]() mutable {
-            int status = object->property("status").toInt();
-            if (status != Loading) {
-                defer.complete();
-                delete proxy;
-            }
-        };
-
-        return defer.future();
+    auto awaitLoader = [=](QObject* object) mutable {        
+        return AsyncFuture::observe(object,SIGNAL(statusChanged())).future();
     };
 
     QList<QFuture<void>> futures;
