@@ -52,13 +52,4 @@ namespace SnapshotTesting {
     void addClassIgnoredProperty(const QString &className , const QString& property);
 
     void removeClassIgnoredProperty(const QString &className , const QString& property);
-
-    class SignalProxy : public QObject {
-        Q_OBJECT
-    public:
-        inline SignalProxy(QObject* parent) : QObject(parent) {
-        }
-    signals:
-        void proxy();
-    };
 }

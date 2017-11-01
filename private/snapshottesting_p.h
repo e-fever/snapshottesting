@@ -6,6 +6,21 @@ namespace SnapshotTesting {
 
     namespace Private {
 
+        class SignalProxy : public QObject {
+            Q_OBJECT
+        public:
+            inline SignalProxy(QObject* parent) : QObject(parent) {
+            }
+        signals:
+            void proxy();
+        };
+
+        class EnumString {
+        public:
+            QString componentName;
+            QString key;
+        };
+
         QString classNameToComponentName(const QString &className);
 
         /// Obtain the context of the input object which should it be belonged to, but not its parent's scope
@@ -45,3 +60,5 @@ namespace SnapshotTesting {
 
     }
 }
+
+Q_DECLARE_METATYPE(SnapshotTesting::Private::EnumString)

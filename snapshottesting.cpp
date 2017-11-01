@@ -509,7 +509,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         DEHYDRATE_FONT(dest,property,original,current, wordSpacing);
     };
 
-    auto _dehydrate = [=](QObject* object) {
+    auto _dehydrate = [=](QObject* object, QString componentName) {
 
         QVariantMap dest;
         QVariantMap defaultValues = obtainDefaultValuesMap(object);
@@ -554,6 +554,14 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
                 value = jsValue.toVariant();
             }
 
+            if (property.isEnumType()) {
+                QMetaEnum enumerator = property.enumerator();
+                EnumString enumValue;
+                enumValue.componentName = componentName;
+                enumValue.key = enumerator.valueToKey(value.toInt());
+                value = QVariant::fromValue<EnumString>(enumValue);
+            }
+
             dest[stringName] = value;
         }
         return dest;
@@ -589,9 +597,10 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             return QVariantMap();
         }
 
-        QVariantMap dest;
+        Header header = obtainItemHeader(object);
 
-        dest = _dehydrate(object);
+        QVariantMap dest;
+        dest = _dehydrate(object, header.name);
 
         QObjectList children = obtainChildrenObjectList(object);
         QVariantList childrenDataList;
@@ -606,7 +615,6 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         }
 
         dest["$class"] = obtainKnownClassName(object);
-        Header header = obtainItemHeader(object);
         dest["$name"] = header.name;
 
         if (!header.comment.isNull()) {
@@ -656,6 +664,8 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
         QString format = "%1: %2";
         QString quotedFormat = "%1: \"%2\"";
 
+        //@TODO Change to a template function and allow customization by user
+
         if (v.type() == QVariant::Bool) {
             res = QString(format).arg(field).arg(v.toBool() ? "true" : "false");
         } else if (v.type() == QVariant::Double) {
@@ -679,6 +689,9 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
             res = QString("%1: Qt.rect(%2,%3,%4,%5)").arg(field).arg(numberToString(rect.x())).arg(numberToString(rect.y())).arg(numberToString(rect.width())).arg(numberToString(rect.height()));
         } else if (v.type() == QVariant::Map || v.type() == QVariant::List) {
             res = QString(format).arg(field).arg(stringify(v));
+        } else if (v.userType() == qMetaTypeId<EnumString>()) {
+            EnumString enumString = v.value<EnumString>();
+            res = QString("%1: %2.%3").arg(field).arg(enumString.componentName).arg(enumString.key);
         } else {
             qDebug() << "Non-supported type" << v.typeName() << " Field :" << field;
             return QString("");
@@ -931,6 +944,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
 }
 
 static void init() {
+    qRegisterMetaType<SnapshotTesting::Private::EnumString>();
     if (m_snapshotFile.isNull()) {
         m_snapshotFile = QtShell::realpath_strip(QtShell::pwd(), "snapshots.json");
     }
