@@ -54,9 +54,9 @@ static QStringList knownComponentList;
 static QMap<QString,QString> classNameToComponentNameTable;
 
 /// The default values of components
-static QMap<QString, QVariantMap> componentDefaultValues;
+static QMap<QString, QVariantMap> classDefaultValues;
 
-static QMap<QString, QStringList> componentIgnoredProperties;
+static QMap<QString, QStringList> classIgnoredProperties;
 
 /// List of data type should not be processed in term of their meta type id
 static QList<int> forbiddenDataTypeList;
@@ -460,8 +460,8 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             QString className = classes.takeLast();
             QList<QVariantMap> pending;
             pending << obtainDynamicGeneratedDefaultValuesMapByClassName(className);
-            if (componentDefaultValues.contains(className)) {
-                pending << componentDefaultValues[className];
+            if (classDefaultValues.contains(className)) {
+                pending << classDefaultValues[className];
             }
 
             for (int i = 0 ; i < pending.size(); i++) {
@@ -481,8 +481,8 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         QStringList result;
         while (meta != 0) {
             QString className = meta->className();
-            if (componentIgnoredProperties.contains(className)) {
-                QStringList list = componentIgnoredProperties[className];
+            if (classIgnoredProperties.contains(className)) {
+                QStringList list = classIgnoredProperties[className];
                 result.append(list);
             }
 
@@ -659,7 +659,7 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
         return res;
     };
 
-    auto _prettyField = [=](QString field, QVariant v, int indent) {
+    auto _prettyField = [=](QString className, QString field, QVariant v, int indent) {
         QString res;
         QString format = "%1: %2";
         QString quotedFormat = "%1: \"%2\"";
@@ -693,7 +693,7 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
             EnumString enumString = v.value<EnumString>();
             res = QString("%1: %2.%3").arg(field).arg(enumString.componentName).arg(enumString.key);
         } else {
-            qDebug() << "Non-supported type" << v.typeName() << " Field :" << field;
+            qDebug() << QString("Non-supported type: %1 from %2 of %3 field").arg(v.typeName()).arg(className).arg(field);
             return QString("");
         }
 
@@ -709,6 +709,7 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
             return QString("");
         }
 
+        QString className = snapshot["$class"].toString();
         QStringList lines;
 
         if (snapshot.contains("$skip")) {
@@ -734,14 +735,14 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
         QStringList keys = snapshot.keys();
 
         if (keys.indexOf("id") >= 0) {
-            lines << _prettyField("id", snapshot["id"], currentIndent).replace("\"","");
+            lines << _prettyField(className, "id", snapshot["id"], currentIndent).replace("\"","");
             keys.removeOne("id");
         }
 
         for (int i = 0 ; i < priorityFields.size() ; i++) {
             QString key = priorityFields[i];
             if (keys.indexOf(key) >= 0) {
-                QString line = _prettyField(key, snapshot[key], currentIndent);
+                QString line = _prettyField(className, key, snapshot[key], currentIndent);
                 if (!line.isEmpty()) {
                     lines << line;
                 }
@@ -754,7 +755,7 @@ static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& option
             if (key.indexOf("$") == 0) {
                 continue;
             }
-            QString line = _prettyField(key, snapshot[key], currentIndent);
+            QString line = _prettyField(className, key, snapshot[key], currentIndent);
             if (!line.isEmpty())
                 lines << line;
         }
@@ -964,8 +965,8 @@ static void init() {
         QString key = knownComponentList[i];
         QVariantMap record =  map[key].toMap();
         classNameToComponentNameTable[key] = record["name"].toString();
-        componentDefaultValues[key] = record["defaultValues"].toMap();
-        componentIgnoredProperties[key] = record["ignoreProperties"].toStringList();
+        classDefaultValues[key] = record["defaultValues"].toMap();
+        classIgnoredProperties[key] = record["ignoreProperties"].toStringList();
     }
 
     forbiddenDataTypeList << qMetaTypeId<QQmlListProperty<QQuickItem>>()
@@ -1205,18 +1206,18 @@ void SnapshotTesting::Private::walk(QObject *object, std::function<bool (QObject
 
 void SnapshotTesting::addClassIgnoredProperty(const QString &className, const QString &property)
 {
-    QStringList list = componentIgnoredProperties[className];
+    QStringList list = classIgnoredProperties[className];
     if (list.indexOf(property) < 0) {
         list.append(property);
     }
-    componentIgnoredProperties[className] = list;
+    classIgnoredProperties[className] = list;
 }
 
 void SnapshotTesting::removeClassIgnoredProperty(const QString &className, const QString &property)
 {
-    QStringList list = componentIgnoredProperties[className];
+    QStringList list = classIgnoredProperties[className];
     list.removeAll(property);
-    componentIgnoredProperties[className] = list;
+    classIgnoredProperties[className] = list;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)
