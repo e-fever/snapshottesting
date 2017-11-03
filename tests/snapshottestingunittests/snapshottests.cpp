@@ -203,8 +203,6 @@ void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot()
 
     QString name = QString("%1_%2").arg(QTest::currentTestFunction()).arg(fileName);
 
-    QVERIFY(SnapshotTesting::waitForLoaded(childItem));
-
     QString text = SnapshotTesting::capture(childItem);
     text.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
     text.replace(QString(SRCDIR), "");
@@ -230,8 +228,6 @@ void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot_expandAll()
     QQmlComponent component(&engine,url);
     QQuickItem *childItem = qobject_cast<QQuickItem*>(component.create());
     QVERIFY(childItem);
-
-    QVERIFY(SnapshotTesting::waitForLoaded(childItem));
 
     SnapshotTesting::Options options;
     options.expandAll = true;
@@ -262,8 +258,6 @@ void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot_hideId()
     QQmlComponent component(&engine,url);
     QQuickItem *childItem = qobject_cast<QQuickItem*>(component.create());
     QVERIFY(childItem);
-
-    QVERIFY(SnapshotTesting::waitForLoaded(childItem));
 
     SnapshotTesting::Options options;
     options.hideId = true;

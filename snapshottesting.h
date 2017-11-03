@@ -13,12 +13,16 @@ namespace SnapshotTesting {
             expandAll = false;
             hideId = false;
             indentSize = 4;
+            captureWhenLoaded = true;
         }
 
         bool captureVisibleItemOnly;
         bool expandAll;
         bool hideId;
         int indentSize;
+
+        /// Capture only if the component is loaded completely
+        bool captureWhenLoaded;
     };
 
     /// Set the file name to save the stored snapshots
@@ -40,8 +44,6 @@ namespace SnapshotTesting {
     void setIgnoreAllMismatched(bool value);
 
     bool ignoreAllMismatched();
-
-    bool waitForLoaded(QObject* object, int timeout = 10000);
 
     QString diff(QString original, QString current);
 
