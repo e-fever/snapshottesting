@@ -17,9 +17,6 @@ Item {
         asynchronous: true
         cache: false
         source: "https://github.com/benlau/junkcode/blob/master/docs/Lanto%20-%20Screenshot%201.png?raw=true"
-        onStatusChanged: {
-            console.log("status", status);
-        }
     }
 
 }

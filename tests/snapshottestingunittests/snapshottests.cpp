@@ -24,6 +24,47 @@ SnapshotTests::SnapshotTests(QObject *parent) : QObject(parent)
     Q_UNUSED(ref);
 }
 
+void SnapshotTests::init()
+{
+    {
+        // Make sure the QtQuick package is loaded
+
+        QQmlEngine engine;
+
+        QString qml  = "import QtQuick 2.0\n Item { }";
+
+        QObject* holder = 0;
+
+        QQmlComponent comp (&engine);
+        comp.setData(qml.toUtf8(),QUrl());
+        holder = comp.create();
+        holder->deleteLater();
+    }
+}
+
+void SnapshotTests::test_obtainQmlPackage()
+{
+    QQuickItem* item = new QQuickItem();
+    QString package = obtainQmlPackage(item);
+
+    QCOMPARE(package, QString("QtQuick"));
+    delete item;
+}
+
+void SnapshotTests::test_obtainDynamicDefaultValues()
+{
+    QQuickItem* item = new QQuickItem();
+
+    item->setX(100);
+    QVariantMap defaultValues = obtainDynamicDefaultValues(item);
+
+    QVERIFY(defaultValues.contains("x"));
+    QCOMPARE(defaultValues["x"].toInt(), 0);
+
+    delete item;
+
+}
+
 void SnapshotTests::test_classNameToComponentName()
 {
     QCOMPARE(classNameToComponentName("AnyOtherClass"), QString("AnyOtherClass"));

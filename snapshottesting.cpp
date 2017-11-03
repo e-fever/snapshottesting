@@ -101,6 +101,20 @@ static QString obtainKnownClassName(QObject* object) {
   return res;
 }
 
+static const QQmlType* findQmlType(QObject* object) {
+    const QQmlType* ret = 0;
+    const QMetaObject* meta = object->metaObject();
+
+    foreach (const QQmlType *ty, QQmlMetaType::qmlAllTypes()) {
+        if (ty->metaObject() == meta) {
+            ret = ty;
+            break;
+        }
+    }
+
+    return ret;
+}
+
 QString SnapshotTesting::Private::classNameToComponentName(const QString &className)
 {
     QString res = className;
@@ -1222,6 +1236,58 @@ void SnapshotTesting::removeClassIgnoredProperty(const QString &className, const
     QStringList list = classIgnoredProperties[className];
     list.removeAll(property);
     classIgnoredProperties[className] = list;
+}
+
+QString SnapshotTesting::Private::obtainQmlPackage(QObject *object)
+{
+    const QMetaObject* meta = object->metaObject();
+    QString package;
+
+    foreach (const QQmlType *ty, QQmlMetaType::qmlAllTypes()) {
+        if (ty->metaObject() == meta) {
+            package = ty->module();
+            break;
+        }
+    }
+
+    return package;
+}
+
+QVariantMap SnapshotTesting::Private::obtainDynamicDefaultValues(QObject *object)
+{
+    static QMap<const QMetaObject*, QVariantMap> storage;
+
+    const QMetaObject* meta = object->metaObject();
+
+    if (storage.contains(meta)) {
+        return storage[meta];
+    }
+
+    QVariantMap res;
+    const QQmlType* type = findQmlType(object);
+
+    if (!type) {
+        return res;
+    }
+
+    QObject* sample = type->create();
+
+    for (int i = 0 ; i < meta->propertyCount(); i++) {
+
+        const QMetaProperty property = meta->property(i);
+        const char* name = property.name();
+
+        QVariant value = sample->property(name);
+        if (value.canConvert<QObject*>()) {
+            continue;
+        }
+        res[name] = value;
+    }
+    delete sample;
+
+    storage[meta] = res;
+
+    return res;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

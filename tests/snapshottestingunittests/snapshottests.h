@@ -14,12 +14,21 @@ signals:
 public slots:
 
 private slots:
+    /* Private API */
+
+    void init();
+
+    void test_obtainQmlPackage();
+
+    void test_obtainDynamicDefaultValues();
 
     void test_classNameToComponentName();
 
     void test_context();
 
     void test_loading_config();
+
+    /* Public API */
 
     void test_SnapshotTesting_diff();
 

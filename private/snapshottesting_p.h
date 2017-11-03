@@ -60,6 +60,11 @@ namespace SnapshotTesting {
 
         /// Wait for a object loaded completely
         bool waitForLoaded(QObject* object, int timeout = 10000);
+
+        QString obtainQmlPackage(QObject* object);
+
+        /// Obtain the default values of the object. The result is not hard coded from database. It will create a new default instance and read its default values
+        QVariantMap obtainDynamicDefaultValues(QObject* object);
     }
 }
 
