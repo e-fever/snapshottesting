@@ -101,9 +101,8 @@ static QString obtainKnownClassName(QObject* object) {
   return res;
 }
 
-static const QQmlType* findQmlType(QObject* object) {
+static const QQmlType* findQmlType(const QMetaObject* meta) {
     const QQmlType* ret = 0;
-    const QMetaObject* meta = object->metaObject();
 
     foreach (const QQmlType *ty, QQmlMetaType::qmlAllTypes()) {
         if (ty->metaObject() == meta) {
@@ -393,6 +392,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         return header;
     };
 
+    /*
     auto obtainDynamicGeneratedDefaultValuesMapByClassName = [=](QString className) {
         static QMap<QString, QVariantMap> autoDefaultValueMap;
 
@@ -457,23 +457,26 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         QString className = removeDynamicClassSuffix(obtainClassName(object));
         return obtainDynamicGeneratedDefaultValuesMapByClassName(className);
     };
+    */
 
     auto obtainDefaultValuesMap = [=](QObject* object) {
         const QMetaObject* meta = object->metaObject();
-        QVariantMap result = obtainDynamicGeneratedDefaultValuesMap(object);
+        QVariantMap result = obtainDynamicDefaultValues(meta);
 
-        QStringList classes;
+        QList<const QMetaObject*> classes;
 
         while (meta != 0) {
-            QString className = meta->className();
-            classes << removeDynamicClassSuffix(className);
+            classes << meta;
             meta = meta->superClass();
         }
 
+        // Reverse the order
         while (classes.size() > 0) {
-            QString className = classes.takeLast();
+            meta = classes.takeLast();
+            QString className = removeDynamicClassSuffix(meta->className());
             QList<QVariantMap> pending;
-            pending << obtainDynamicGeneratedDefaultValuesMapByClassName(className);
+            pending << obtainDynamicDefaultValues(meta);
+
             if (classDefaultValues.contains(className)) {
                 pending << classDefaultValues[className];
             }
@@ -1255,35 +1258,66 @@ QString SnapshotTesting::Private::obtainQmlPackage(QObject *object)
 
 QVariantMap SnapshotTesting::Private::obtainDynamicDefaultValues(QObject *object)
 {
-    static QMap<const QMetaObject*, QVariantMap> storage;
+    return obtainDynamicDefaultValues(object->metaObject());
+}
 
-    const QMetaObject* meta = object->metaObject();
+QVariantMap SnapshotTesting::Private::obtainDynamicDefaultValues(const QMetaObject *meta)
+{
+    static QMap<const QMetaObject*, QVariantMap> storage;
 
     if (storage.contains(meta)) {
         return storage[meta];
     }
 
     QVariantMap res;
-    const QQmlType* type = findQmlType(object);
+    const QQmlType* type = findQmlType(meta);
 
     if (!type) {
         return res;
     }
 
-    QObject* sample = type->create();
+    auto createQmlComponent = [](QString componentName, QString package, int major, int minor) {
+        QStringList packages;
+        packages << QString("import %1 %2.%3").arg(package).arg(major).arg(minor);
 
-    for (int i = 0 ; i < meta->propertyCount(); i++) {
+        QString qml  = QString("%2\n %1 {}").arg(componentName).arg(packages.join("\n"));
 
-        const QMetaProperty property = meta->property(i);
-        const char* name = property.name();
+        QQmlApplicationEngine engine;
+        QQmlComponent comp (&engine);
+        comp.setData(qml.toUtf8(),QUrl());
+        QObject* holder = comp.create();
+        QVariantMap res;
 
-        QVariant value = sample->property(name);
-        if (value.canConvert<QObject*>()) {
-            continue;
+        if (holder) {
+            const QMetaObject* meta = holder->metaObject();
+
+            for (int i = 0 ; i < meta->propertyCount(); i++) {
+
+                const QMetaProperty property = meta->property(i);
+                const char* name = property.name();
+
+                QVariant value = holder->property(name);
+                if (value.canConvert<QObject*>()) {
+                    continue;
+                }
+                res[name] = value;
+            }
+            delete holder;
+        } else {
+            qDebug() << comp.errorString();
         }
-        res[name] = value;
+
+        return res;
+    };
+
+    QString module = type->module();
+
+    // dirty hack
+    if (module == "QtQuick.Templates") {
+        module = "QtQuick.Controls";
     }
-    delete sample;
+
+    res = createQmlComponent(type->elementName(), module, type->majorVersion(), type->minorVersion());
 
     storage[meta] = res;
 

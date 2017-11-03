@@ -64,6 +64,8 @@ namespace SnapshotTesting {
         QString obtainQmlPackage(QObject* object);
 
         /// Obtain the default values of the object. The result is not hard coded from database. It will create a new default instance and read its default values
+        QVariantMap obtainDynamicDefaultValues(const QMetaObject* meta);
+
         QVariantMap obtainDynamicDefaultValues(QObject* object);
     }
 }
