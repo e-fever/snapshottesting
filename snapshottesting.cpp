@@ -114,6 +114,19 @@ static const QQmlType* findQmlType(const QMetaObject* meta) {
     return ret;
 }
 
+static bool isPublicComponent(const QMetaObject* meta) {
+    bool res = false;
+
+
+    foreach (const QQmlType *ty, QQmlMetaType::qmlTypes()) {
+        if (ty->metaObject() == meta) {
+            res = true;
+            break;
+        }
+    }
+    return res;
+}
+
 /// Copy from QImmutable project
 static void assign(QVariantMap &dest, const QObject *source)
 {
@@ -1220,7 +1233,7 @@ QVariantMap SnapshotTesting::Private::obtainDynamicDefaultValues(const QMetaObje
     QVariantMap res;
     const QQmlType* type = findQmlType(meta);
 
-    if (!type) {
+    if (!type || !type->isCreatable() || !isPublicComponent(meta)) {
         return res;
     }
 
