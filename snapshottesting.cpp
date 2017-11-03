@@ -114,6 +114,21 @@ static const QQmlType* findQmlType(const QMetaObject* meta) {
     return ret;
 }
 
+/// Copy from QImmutable project
+static void assign(QVariantMap &dest, const QObject *source)
+{
+    const QMetaObject* meta = source->metaObject();
+
+    for (int i = 0 ; i < meta->propertyCount(); i++) {
+        const QMetaProperty property = meta->property(i);
+        QString p = property.name();
+
+        QVariant value = source->property(property.name());
+        dest[p] = value;
+    }
+
+}
+
 QString SnapshotTesting::Private::classNameToComponentName(const QString &className)
 {
     QString res = className;
@@ -391,73 +406,6 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
 
         return header;
     };
-
-    /*
-    auto obtainDynamicGeneratedDefaultValuesMapByClassName = [=](QString className) {
-        static QMap<QString, QVariantMap> autoDefaultValueMap;
-
-        if (className == "QQuickLoader") {
-            return QVariantMap();
-        }
-
-        if (autoDefaultValueMap.contains(className)) {
-            return autoDefaultValueMap[className];
-        }
-
-        QVariantMap res;
-
-        if (className.indexOf("QQuick") != 0) {
-            return res;
-        }
-
-        QString itemName = SnapshotTesting::Private::classNameToComponentName(className);
-
-        QQmlApplicationEngine engine;
-
-        QStringList packages;
-        packages << "import QtQuick 2.0";
-        packages << "import QtQuick.Layouts 1.1";
-        packages << "import QtQml.Models 2.1";
-
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
-        packages << "import QtQuick.Controls 2.1";
-#endif
-
-        QString qml  = QString("%2\n %1 {}").arg(itemName).arg(packages.join("\n"));
-
-        QQmlComponent comp (&engine);
-        comp.setData(qml.toUtf8(),QUrl());
-        QObject* holder = comp.create();
-
-        if (holder) {
-            const QMetaObject* meta = holder->metaObject();
-
-            for (int i = 0 ; i < meta->propertyCount(); i++) {
-
-                const QMetaProperty property = meta->property(i);
-                const char* name = property.name();
-
-                QVariant value = holder->property(name);
-                if (value.canConvert<QObject*>()) {
-                    continue;
-                }
-                res[name] = value;
-            }
-            delete holder;
-        } else {
-            qDebug() << comp.errorString();
-        }
-
-        autoDefaultValueMap[className] = res;
-        return res;
-    };
-
-    auto obtainDynamicGeneratedDefaultValuesMap = [=](QObject* object) {
-
-        QString className = removeDynamicClassSuffix(obtainClassName(object));
-        return obtainDynamicGeneratedDefaultValuesMapByClassName(className);
-    };
-    */
 
     auto obtainDefaultValuesMap = [=](QObject* object) {
         const QMetaObject* meta = object->metaObject();
@@ -1289,19 +1237,7 @@ QVariantMap SnapshotTesting::Private::obtainDynamicDefaultValues(const QMetaObje
         QVariantMap res;
 
         if (holder) {
-            const QMetaObject* meta = holder->metaObject();
-
-            for (int i = 0 ; i < meta->propertyCount(); i++) {
-
-                const QMetaProperty property = meta->property(i);
-                const char* name = property.name();
-
-                QVariant value = holder->property(name);
-                if (value.canConvert<QObject*>()) {
-                    continue;
-                }
-                res[name] = value;
-            }
+            assign(res, holder);
             delete holder;
         } else {
             qDebug() << comp.errorString();
