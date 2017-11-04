@@ -101,10 +101,18 @@ static QString obtainKnownClassName(QObject* object) {
   return res;
 }
 
-static const QQmlType* findQmlType(const QMetaObject* meta) {
+static const QQmlType* findQmlType(const QMetaObject* meta, bool all = true) {
     const QQmlType* ret = 0;
 
-    foreach (const QQmlType *ty, QQmlMetaType::qmlAllTypes()) {
+    QList<QQmlType*> types;
+
+    if (all) {
+        types = QQmlMetaType::qmlAllTypes();
+    } else {
+        types = QQmlMetaType::qmlTypes();
+    }
+
+    foreach (const QQmlType *ty, types) {
         if (ty->metaObject() == meta) {
             ret = ty;
             break;
@@ -145,6 +153,20 @@ static void assign(QVariantMap &dest, const QObject *source)
 QString SnapshotTesting::Private::classNameToComponentName(const QString &className)
 {
     QString res = className;
+
+    const QQmlType* type = 0;
+
+    foreach (const QQmlType *ty, QQmlMetaType::qmlTypes()) {
+        if (ty->metaObject() && ty->metaObject()->className() == className) {
+            type = ty;
+            break;
+        }
+    }
+
+    if (type) {
+        return type->elementName();
+    }
+
     if (res.indexOf("QQuick") == 0) {
         res = res.replace("QQuick", "");
     }
