@@ -67,6 +67,12 @@ Item {
                 SnapshotTesting.matchStoredSnapshot("qml_test_capture_expandAll_" + name, snapshot);
             }
         }
+
+        function test_caller() {
+            compare(SnapshotTesting._caller(), "test_caller");
+        }
     }
+
+
 
 }

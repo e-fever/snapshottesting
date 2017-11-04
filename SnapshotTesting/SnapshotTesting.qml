@@ -17,6 +17,20 @@ Item {
         }
     }
 
+    function _caller() {
+        try {
+            throw new Error();
+        } catch (e) {
+
+            var lines = e.stack.split("\n");
+            var line = lines[1];
+            var token = line.split("@");
+
+            return token[0];
+        }
+
+    }
+
     onSnapshotsFileChanged: {
         if (Adapter.snapshotsFile !== snapshotTesting.snapshotsFile) {
             Adapter.snapshotsFile = snapshotTesting.snapshotsFile;
