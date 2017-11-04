@@ -488,6 +488,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     };
 
     auto _dehydrate = [=](QObject* object, QString componentName) {
+        Q_UNUSED(componentName);
 
         QVariantMap dest;
         QVariantMap defaultValues = obtainDefaultValuesMap(object);
@@ -534,8 +535,8 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
 
             if (property.isEnumType()) {
                 QMetaEnum enumerator = property.enumerator();
-                EnumString enumValue;
-                enumValue.componentName = componentName;
+                EnumString enumValue;                
+                enumValue.componentName = classNameToComponentName(enumerator.scope());
                 enumValue.key = enumerator.valueToKey(value.toInt());
                 value = QVariant::fromValue<EnumString>(enumValue);
             }

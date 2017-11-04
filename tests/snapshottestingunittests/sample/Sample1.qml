@@ -53,5 +53,6 @@ Item {
 
     MouseArea {
         id: item8
+        acceptedButtons: Qt.RightButton
     }
 }
