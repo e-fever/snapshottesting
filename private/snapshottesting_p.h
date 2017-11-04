@@ -1,6 +1,7 @@
 #pragma once
 #include <QQmlContext>
 #include <QJSValue>
+#include <functional>
 
 namespace SnapshotTesting {
 
