@@ -60,7 +60,7 @@ namespace SnapshotTesting {
         void walk(QObject* object, std::function<bool(QObject*, QObject*)> predicate);
 
         /// Wait for a object loaded completely
-        bool waitForLoaded(QObject* object, int timeout = 10000);
+        bool subscribeOnReady(QObject* object, int timeout = 10000);
 
         QString obtainQmlPackage(QObject* object);
 

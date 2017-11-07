@@ -883,7 +883,7 @@ bool SnapshotTesting::ignoreAllMismatched()
 QString SnapshotTesting::capture(QObject *object, SnapshotTesting::Options options)
 {
     if (options.captureWhenLoaded) {
-        Private::waitForLoaded(object);
+        Private::subscribeOnReady(object);
     }
 
     QVariantMap data = dehydrate(object, options);
@@ -1106,7 +1106,7 @@ QObjectList SnapshotTesting::Private::obtainChildrenObjectList(QObject *object)
     return children;
 }
 
-bool SnapshotTesting::Private::waitForLoaded(QObject *object, int timeout)
+bool SnapshotTesting::Private::subscribeOnReady(QObject *object, int timeout)
 {
     auto onStatusChanged = [=](QObject* object) mutable {
         return AsyncFuture::observe(object,SIGNAL(statusChanged())).future();
