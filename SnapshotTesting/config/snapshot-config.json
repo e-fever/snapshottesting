@@ -99,7 +99,8 @@
             "contentHeight",
             "baseUrl",
             "contentWidth",
-            "implicitWidth"
+            "implicitWidth",
+            "fontInfo"
         ]
     },
     "QQuickColumn": {
