@@ -24,12 +24,16 @@ namespace SnapshotTesting {
 
         class QmlType {
         public:
+            inline QmlType() {
+                isNull = true;
+            }
             QString elementName;
             const QMetaObject* meta;
             bool isNull;
             QString module;
             int majorVersion;
             int minorVersion;
+            QString className;
             bool isCreatable;
         };
 

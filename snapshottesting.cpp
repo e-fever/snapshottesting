@@ -104,6 +104,21 @@ static QString obtainKnownClassName(QObject* object) {
 static QList<QmlType> obtainQmlTypeList(bool all = true) {
     QList<QmlType> ret;
 
+    auto createQmlType = [](const QQmlType* ty) {
+        QmlType item;
+        item.elementName = ty->elementName();
+        item.meta = ty->metaObject();
+        item.isCreatable = ty->isCreatable();
+        item.module = ty->module();
+        item.majorVersion = ty->majorVersion();
+        item.minorVersion = ty->minorVersion();
+        if (ty->metaObject()) {
+            item.className = ty->metaObject()->className();
+        }
+        return item;
+    };
+
+#if (QT_VERSION < QT_VERSION_CHECK(5,9,2))
     QList<QQmlType*> types;
 
     if (all) {
@@ -113,15 +128,22 @@ static QList<QmlType> obtainQmlTypeList(bool all = true) {
     }
 
     foreach (const QQmlType *ty, types) {
-        QmlType item;
-        item.elementName = ty->elementName();
-        item.meta = ty->metaObject();
-        item.isCreatable = ty->isCreatable();
-        item.module = ty->module();
-        item.majorVersion = ty->majorVersion();
-        item.minorVersion = ty->minorVersion();
-        ret << item;
+       ret << createQmlType(ty);
     }
+#else
+    QList<QQmlType> types;
+
+    if (all) {
+        types = QQmlMetaType::qmlAllTypes();
+    } else {
+        types = QQmlMetaType::qmlTypes();
+    }
+
+    foreach (const QQmlType ty, types) {
+        ret << createQmlType(&ty);
+    }
+
+#endif
 
     return ret;
 };
@@ -143,19 +165,6 @@ static const QmlType findQmlType(const QMetaObject* meta, bool all = true) {
     return ret;
 }
 
-static bool isPublicComponent(const QMetaObject* meta) {
-    bool res = false;
-
-
-    foreach (const QQmlType *ty, QQmlMetaType::qmlTypes()) {
-        if (ty->metaObject() == meta) {
-            res = true;
-            break;
-        }
-    }
-    return res;
-}
-
 /// Copy from QImmutable project
 static void assign(QVariantMap &dest, const QObject *source)
 {
@@ -174,17 +183,21 @@ QString SnapshotTesting::Private::classNameToComponentName(const QString &classN
 {
     QString res = className;
 
-    const QQmlType* type = 0;
+    QList<QmlType> types;
 
-    foreach (const QQmlType *ty, QQmlMetaType::qmlTypes()) {
-        if (ty->metaObject() && ty->metaObject()->className() == className) {
+    QmlType type;
+
+    types = obtainQmlTypeList(false);
+
+    foreach (QmlType ty, types) {
+        if (ty.className == className) {
             type = ty;
             break;
         }
     }
 
-    if (type) {
-        return type->elementName();
+    if (!type.isNull) {
+        return type.elementName;
     }
 
     if (res.indexOf("QQuick") == 0) {
@@ -1248,16 +1261,9 @@ void SnapshotTesting::removeClassIgnoredProperty(const QString &className, const
 QString SnapshotTesting::Private::obtainQmlPackage(QObject *object)
 {
     const QMetaObject* meta = object->metaObject();
-    QString package;
 
-    foreach (const QQmlType *ty, QQmlMetaType::qmlAllTypes()) {
-        if (ty->metaObject() == meta) {
-            package = ty->module();
-            break;
-        }
-    }
-
-    return package;
+    QmlType type = findQmlType(meta);
+    return type.module;
 }
 
 QVariantMap SnapshotTesting::Private::obtainDynamicDefaultValues(QObject *object)
