@@ -22,6 +22,17 @@ namespace SnapshotTesting {
             QString key;
         };
 
+        class QmlType {
+        public:
+            QString elementName;
+            const QMetaObject* meta;
+            bool isNull;
+            QString module;
+            int majorVersion;
+            int minorVersion;
+            bool isCreatable;
+        };
+
         QString classNameToComponentName(const QString &className);
 
         /// Obtain the context of the input object which should it be belonged to, but not its parent's scope

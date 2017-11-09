@@ -101,8 +101,8 @@ static QString obtainKnownClassName(QObject* object) {
   return res;
 }
 
-static const QQmlType* findQmlType(const QMetaObject* meta, bool all = true) {
-    const QQmlType* ret = 0;
+static QList<QmlType> obtainQmlTypeList(bool all = true) {
+    QList<QmlType> ret;
 
     QList<QQmlType*> types;
 
@@ -113,8 +113,29 @@ static const QQmlType* findQmlType(const QMetaObject* meta, bool all = true) {
     }
 
     foreach (const QQmlType *ty, types) {
-        if (ty->metaObject() == meta) {
+        QmlType item;
+        item.elementName = ty->elementName();
+        item.meta = ty->metaObject();
+        item.isCreatable = ty->isCreatable();
+        item.module = ty->module();
+        item.majorVersion = ty->majorVersion();
+        item.minorVersion = ty->minorVersion();
+        ret << item;
+    }
+
+    return ret;
+};
+
+static const QmlType findQmlType(const QMetaObject* meta, bool all = true) {
+    QmlType ret;
+    ret.isNull = true;
+
+    QList<QmlType> types = obtainQmlTypeList(all);
+
+    foreach (const QmlType ty, types) {
+        if (ty.meta == meta) {
             ret = ty;
+            ret.isNull = false;
             break;
         }
     }
@@ -147,7 +168,6 @@ static void assign(QVariantMap &dest, const QObject *source)
         QVariant value = source->property(property.name());
         dest[p] = value;
     }
-
 }
 
 QString SnapshotTesting::Private::classNameToComponentName(const QString &className)
@@ -1254,9 +1274,9 @@ QVariantMap SnapshotTesting::Private::obtainDynamicDefaultValues(const QMetaObje
     }
 
     QVariantMap res;
-    const QQmlType* type = findQmlType(meta);
+    const QmlType type = findQmlType(meta, false); // it will only return public component
 
-    if (!type || !type->isCreatable() || !isPublicComponent(meta)) {
+    if (type.isNull || !type.isCreatable) {
         return res;
     }
 
@@ -1282,14 +1302,14 @@ QVariantMap SnapshotTesting::Private::obtainDynamicDefaultValues(const QMetaObje
         return res;
     };
 
-    QString module = type->module();
+    QString module = type.module;
 
     // dirty hack
     if (module == "QtQuick.Templates") {
         module = "QtQuick.Controls";
     }
 
-    res = createQmlComponent(type->elementName(), module, type->majorVersion(), type->minorVersion());
+    res = createQmlComponent(type.elementName, module, type.majorVersion, type.minorVersion);
 
     storage[meta] = res;
 
