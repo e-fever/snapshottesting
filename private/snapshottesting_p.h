@@ -83,6 +83,8 @@ namespace SnapshotTesting {
         QVariantMap obtainDynamicDefaultValues(const QMetaObject* meta);
 
         QVariantMap obtainDynamicDefaultValues(QObject* object);
+
+        QObject* createQmlComponent(QQmlEngine* engine, QString componentName, QString package, int major, int minor);
     }
 }
 

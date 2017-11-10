@@ -1286,23 +1286,16 @@ QVariantMap SnapshotTesting::Private::obtainDynamicDefaultValues(const QMetaObje
         return res;
     }
 
-    auto createQmlComponent = [](QString componentName, QString package, int major, int minor) {
-        QStringList packages;
-        packages << QString("import %1 %2.%3").arg(package).arg(major).arg(minor);
+    auto getDefaultValues = [](QString componentName, QString package, int major, int minor) {
 
-        QString qml  = QString("%2\n %1 {}").arg(componentName).arg(packages.join("\n"));
+        QQmlEngine engine;
 
-        QQmlApplicationEngine engine;
-        QQmlComponent comp (&engine);
-        comp.setData(qml.toUtf8(),QUrl());
-        QObject* holder = comp.create();
+        QObject* holder = createQmlComponent(&engine, componentName, package, major, minor);
         QVariantMap res;
 
         if (holder) {
             assign(res, holder);
             delete holder;
-        } else {
-            qDebug() << comp.errorString();
         }
 
         return res;
@@ -1315,11 +1308,30 @@ QVariantMap SnapshotTesting::Private::obtainDynamicDefaultValues(const QMetaObje
         module = "QtQuick.Controls";
     }
 
-    res = createQmlComponent(type.elementName, module, type.majorVersion, type.minorVersion);
+    res = getDefaultValues(type.elementName, module, type.majorVersion, type.minorVersion);
 
     storage[meta] = res;
 
     return res;
+}
+
+
+QObject *SnapshotTesting::Private::createQmlComponent(QQmlEngine* engine, QString componentName, QString package, int major, int minor)
+{
+    QStringList packages;
+    packages << QString("import %1 %2.%3").arg(package).arg(major).arg(minor);
+
+    QString qml  = QString("%2\n %1 {}").arg(componentName).arg(packages.join("\n"));
+
+    QQmlComponent comp (engine);
+    comp.setData(qml.toUtf8(),QUrl());
+    QObject* ret = comp.create();
+
+    if (!ret) {
+        qDebug() << comp.errorString();
+    }
+
+    return ret;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

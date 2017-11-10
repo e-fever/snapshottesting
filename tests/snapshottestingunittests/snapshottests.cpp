@@ -30,15 +30,7 @@ void SnapshotTests::init()
         // Make sure the QtQuick package is loaded
 
         QQmlEngine engine;
-
-        QString qml  = "import QtQuick 2.0\n Item { }";
-
-        QObject* holder = 0;
-
-        QQmlComponent comp (&engine);
-        comp.setData(qml.toUtf8(),QUrl());
-        holder = comp.create();
-        holder->deleteLater();
+        createQmlComponent(&engine, "Item", "QtQuick", 2 , 0)->deleteLater();
     }
 }
 
