@@ -70,6 +70,22 @@ void SnapshotTests::test_context()
 {
     QQmlApplicationEngine engine;
 
+    auto lsContext = listContextUrls;
+
+    {
+        QObject* object = createQmlComponent(&engine, "Button", "QtQuick.Controls", 2, 0);
+        QVERIFY(object);
+        QVERIFY(lsContext(object).size() > 0);
+        object->deleteLater();
+    }
+
+    {
+        QObject* object = createQmlComponent(&engine, "Item", "QtQuick", 2, 0);
+        QVERIFY(object);
+        QVERIFY(lsContext(object).size()  == 0);
+        object->deleteLater();
+    }
+
     {
         QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample1.qml"));
 

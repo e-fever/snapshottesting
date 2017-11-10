@@ -246,6 +246,7 @@ QQmlContext* SnapshotTesting::Private::obtainCurrentScopeContext(QObject *object
     return result;
 }
 
+/// Obtain the bottom-most context of a QObject
 QQmlContext *SnapshotTesting::Private::obtainCreationContext(QObject *object)
 {
     QQmlContext* result = 0;
@@ -1332,6 +1333,24 @@ QObject *SnapshotTesting::Private::createQmlComponent(QQmlEngine* engine, QStrin
     }
 
     return ret;
+}
+
+
+
+QStringList SnapshotTesting::Private::listContextUrls(QObject *object)
+{
+    QStringList list;
+    QQmlContext* context = obtainCreationContext(object);
+
+    while (context) {
+        QUrl url  = context->baseUrl();
+        if (!url.isEmpty()) {
+            list << url.toString();
+        }
+        context = context->parentContext();
+    }
+
+    return list;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

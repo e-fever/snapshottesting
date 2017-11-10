@@ -61,6 +61,8 @@ namespace SnapshotTesting {
 
         QString obtainRootComponentName(QObject* object, bool expandAll = false);
 
+        QStringList listContextUrls(QObject* object);
+
         QString stringify(QJSEngine*engine, QJSValue value);
 
         QString stringify(QVariant v);
