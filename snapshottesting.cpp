@@ -43,12 +43,18 @@ using namespace std;
  *
  */
 
+/* Options */
+
 static QString m_snapshotFile;
 static QVariantMap m_snapshots;
 static bool m_snapshotsDirty = false;
 static bool m_interactiveEnabled = true;
 static bool m_ignoreAllMismatched = false;
 static bool m_acceptAllMismatched = false;
+static QStringList m_qtInternalContextUrls;
+
+/* End of Options */
+
 
 static QStringList knownComponentList;
 static QMap<QString,QString> classNameToComponentNameTable;
@@ -662,7 +668,12 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             baseUrl = context->baseUrl();
         }
 
-        if (!expandAll && topLevelBaseUrlList.indexOf(baseUrl) < 0) {
+        if ( (!expandAll && topLevelBaseUrlList.indexOf(baseUrl) < 0) ||
+             (m_qtInternalContextUrls.indexOf(QtShell::dirname(baseUrl.toString())) >=0 )) {
+            // Skip condition
+            // 1) It don't have any context relatd to the top level context url
+            // 2) The context belong to Qt's internal context
+
             dest["$skip"] = true;
         }
 
@@ -989,6 +1000,9 @@ static void init() {
         m_snapshotFile = QtShell::realpath_strip(QtShell::pwd(), "snapshots.json");
     }
 
+    {
+        /* Configuration Loading */
+
     QString text = QtShell::cat(":/qt-project.org/imports/SnapshotTesting/config/snapshot-config.json");
 
     QJsonParseError error;
@@ -1012,6 +1026,19 @@ static void init() {
                       << qMetaTypeId<QQmlListProperty<QObject>>()
                       << qMetaTypeId<QByteArray>()
                       << qMetaTypeId<void*>();
+    }
+
+    /* Dynamic Configuration */
+    {
+        QQmlEngine engine;
+
+        {
+            QObject* button = createQmlComponent(&engine, "Button", "QtQuick.Controls", 2 ,0);
+            QStringList urls = listContextUrls(button);
+            m_qtInternalContextUrls << QtShell::dirname(urls[0]);
+        }
+    }
+
 }
 
 
@@ -1334,8 +1361,6 @@ QObject *SnapshotTesting::Private::createQmlComponent(QQmlEngine* engine, QStrin
 
     return ret;
 }
-
-
 
 QStringList SnapshotTesting::Private::listContextUrls(QObject *object)
 {
