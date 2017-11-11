@@ -66,6 +66,14 @@ void SnapshotTests::test_classNameToComponentName()
     QCOMPARE(classNameToComponentName("QQuickItem_QML_4523"), QString("Item"));
     QCOMPARE(classNameToComponentName("QQuickText"), QString("Text"));
 
+    {
+        QQmlEngine engine;
+        QObject* object = createQmlComponent(&engine, "Canvas", "QtQuick", 2, 0);
+
+        QCOMPARE(classNameToComponentName(object->metaObject()->className()), QString("Canvas"));
+        object->deleteLater();
+    }
+
 }
 
 void SnapshotTests::test_context()

@@ -118,6 +118,7 @@ static QList<QmlType> obtainQmlTypeList(bool all = true) {
         item.module = ty->module();
         item.majorVersion = ty->majorVersion();
         item.minorVersion = ty->minorVersion();
+        item.isNull = false;
         if (ty->metaObject()) {
             item.className = ty->metaObject()->className();
         }
