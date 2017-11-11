@@ -34,7 +34,8 @@ DISTFILES +=     qpm.json     \
     sample/Sample8.qml \
     sample/Sample9.qml \
     sample/Sample_QJSValue.qml \
-    sample/Sample_Loader_Async.qml
+    sample/Sample_Loader_Async.qml \
+    sample/CustomButton.qml
 
 HEADERS += \    
     snapshottests.h

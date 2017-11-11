@@ -64,6 +64,8 @@ void SnapshotTests::test_classNameToComponentName()
     QCOMPARE(classNameToComponentName("QQuickItem"), QString("Item"));
     QCOMPARE(classNameToComponentName("QQuickItem_QML_123"), QString("Item"));
     QCOMPARE(classNameToComponentName("QQuickItem_QML_4523"), QString("Item"));
+    QCOMPARE(classNameToComponentName("QQuickText"), QString("Text"));
+
 }
 
 void SnapshotTests::test_context()
