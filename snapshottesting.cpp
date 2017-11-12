@@ -1384,7 +1384,7 @@ QStringList SnapshotTesting::Private::listContextUrls(QObject *object)
 
 QFuture<QImage> SnapshotTesting::Private::grabImage(QQuickItem *item)
 {
-    QSize size = item->size().toSize();
+    QSize size = QSize(item->width(), item->height());
     QSharedPointer<QQuickItemGrabResult> grabber = item->grabToImage(size);
 
     if (grabber.isNull()) {
