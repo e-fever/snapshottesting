@@ -2,6 +2,8 @@
 #include <QQmlContext>
 #include <QJSValue>
 #include <functional>
+#include <QFuture>
+#include <QQuickItem>
 
 namespace SnapshotTesting {
 
@@ -87,6 +89,8 @@ namespace SnapshotTesting {
         QVariantMap obtainDynamicDefaultValues(QObject* object);
 
         QObject* createQmlComponent(QQmlEngine* engine, QString componentName, QString package, int major, int minor);
+
+        QFuture<QImage> grabImage(QQuickItem* item);
     }
 }
 

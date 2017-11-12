@@ -17,6 +17,7 @@
 #include <private/snapshottesting_p.h>
 #include <aconcurrent.h>
 #include <functional>
+#include <QQuickItemGrabResult>
 
 using namespace SnapshotTesting;
 using namespace SnapshotTesting::Private;
@@ -928,7 +929,7 @@ bool SnapshotTesting::ignoreAllMismatched()
 
 QString SnapshotTesting::capture(QObject *object, SnapshotTesting::Options options)
 {
-    if (options.captureWhenReady) {
+    if (options.captureOnReady) {
         Private::subscribeOnReady(object);
     }
 
@@ -1377,6 +1378,27 @@ QStringList SnapshotTesting::Private::listContextUrls(QObject *object)
     }
 
     return list;
+}
+
+
+
+QFuture<QImage> SnapshotTesting::Private::grabImage(QQuickItem *item)
+{
+    QSize size = item->size().toSize();
+    QSharedPointer<QQuickItemGrabResult> grabber = item->grabToImage(size);
+
+    if (grabber.isNull()) {
+        return QFuture<QImage>();
+    }
+
+    auto defer = AsyncFuture::deferred<QImage>();
+
+    AsyncFuture::observe(grabber.data(), &QQuickItemGrabResult::ready).subscribe([=]() mutable {
+        defer.complete(grabber->image());
+    });
+
+
+    return defer.future();
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

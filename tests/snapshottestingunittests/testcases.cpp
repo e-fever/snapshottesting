@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QQuickItemGrabResult>
 #include <QQuickWindow>
+#include <aconcurrent.h>
 #include <private/qqmldata_p.h>
 #include <private/qqmlcontext_p.h>
 #include "automator.h"
@@ -187,6 +188,29 @@ void Testcases::test_loading_config()
 
         QVERIFY(error.error == QJsonParseError::NoError);
     }
+}
+
+void Testcases::test_grabImage()
+{
+    QQuickWindow window;
+    QQmlEngine engine;
+    QObject* object = createQmlComponent(&engine, "Item", "QtQuick", 2, 0);
+
+    QQuickItem *item = qobject_cast<QQuickItem*>(object);
+    QVERIFY(item);
+    item->setWidth(200);
+    item->setHeight(300);
+
+    item->setParentItem(window.contentItem());
+    window.show();
+
+    QFuture<QImage> future = grabImage(item);
+
+    AConcurrent::await(future);
+
+    QImage image = future.result();
+
+    QCOMPARE(image.size(), QSize(200,300));
 }
 
 void Testcases::test_SnapshotTesting_diff()

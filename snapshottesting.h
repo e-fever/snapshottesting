@@ -13,7 +13,7 @@ namespace SnapshotTesting {
             expandAll = false;
             hideId = false;
             indentSize = 4;
-            captureWhenReady = true;
+            captureOnReady = true;
         }
 
         bool captureVisibleItemOnly;
@@ -22,7 +22,7 @@ namespace SnapshotTesting {
         int indentSize;
 
         /// Capture only if the component is ready (Loader and Image are loaded completely)
-        bool captureWhenReady;
+        bool captureOnReady;
     };
 
     /// Set the file name to save the stored snapshots
