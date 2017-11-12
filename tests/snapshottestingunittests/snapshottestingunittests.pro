@@ -6,8 +6,8 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-SOURCES +=     main.cpp \    
-    snapshottests.cpp
+SOURCES +=     main.cpp \     
+    testcases.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 DEFINES += QUICK_TEST_SOURCE_DIR=\\\"$$PWD/\\\"
@@ -37,5 +37,5 @@ DISTFILES +=     qpm.json     \
     sample/Sample_Loader_Async.qml \
     sample/CustomButton.qml
 
-HEADERS += \    
-    snapshottests.h
+HEADERS += \     
+    testcases.h

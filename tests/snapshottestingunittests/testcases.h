@@ -3,11 +3,11 @@
 
 #include <QObject>
 
-class SnapshotTests : public QObject
+class Testcases : public QObject
 {
     Q_OBJECT
 public:
-    explicit SnapshotTests(QObject *parent = nullptr);
+    explicit Testcases(QObject *parent = nullptr);
 
 signals:
 

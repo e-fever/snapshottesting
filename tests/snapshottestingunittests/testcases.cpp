@@ -9,14 +9,14 @@
 #include <private/qqmldata_p.h>
 #include <private/qqmlcontext_p.h>
 #include "automator.h"
-#include "snapshottests.h"
+#include "testcases.h"
 #include "snapshottesting.h"
 #include "private/snapshottesting_p.h"
 
 using namespace SnapshotTesting;
 using namespace SnapshotTesting::Private;
 
-SnapshotTests::SnapshotTests(QObject *parent) : QObject(parent)
+Testcases::Testcases(QObject *parent) : QObject(parent)
 {
     auto ref = [=]() {
         QTest::qExec(this, 0, 0); // Autotest detect available test cases of a QObject by looking for "QTest::qExec" in source code
@@ -24,7 +24,7 @@ SnapshotTests::SnapshotTests(QObject *parent) : QObject(parent)
     Q_UNUSED(ref);
 }
 
-void SnapshotTests::init()
+void Testcases::init()
 {
     {
         // Make sure the QtQuick package is loaded
@@ -34,7 +34,7 @@ void SnapshotTests::init()
     }
 }
 
-void SnapshotTests::test_obtainQmlPackage()
+void Testcases::test_obtainQmlPackage()
 {
     QQuickItem* item = new QQuickItem();
     QString package = obtainQmlPackage(item);
@@ -43,7 +43,7 @@ void SnapshotTests::test_obtainQmlPackage()
     delete item;
 }
 
-void SnapshotTests::test_obtainDynamicDefaultValues()
+void Testcases::test_obtainDynamicDefaultValues()
 {
     QQuickItem* item = new QQuickItem();
 
@@ -57,7 +57,7 @@ void SnapshotTests::test_obtainDynamicDefaultValues()
 
 }
 
-void SnapshotTests::test_classNameToComponentName()
+void Testcases::test_classNameToComponentName()
 {
     QCOMPARE(classNameToComponentName("AnyOtherClass"), QString("AnyOtherClass"));
     QCOMPARE(classNameToComponentName("AnyOtherClass_QML_123"), QString("AnyOtherClass"));
@@ -76,7 +76,7 @@ void SnapshotTests::test_classNameToComponentName()
 
 }
 
-void SnapshotTests::test_context()
+void Testcases::test_context()
 {
     QQmlApplicationEngine engine;
 
@@ -176,7 +176,7 @@ void SnapshotTests::test_context()
     }
 }
 
-void SnapshotTests::test_loading_config()
+void Testcases::test_loading_config()
 {
     {
         QString text = QtShell::cat(":/qt-project.org/imports/SnapshotTesting/config/snapshot-config.json");
@@ -189,7 +189,7 @@ void SnapshotTests::test_loading_config()
     }
 }
 
-void SnapshotTests::test_SnapshotTesting_diff()
+void Testcases::test_SnapshotTesting_diff()
 {
     QString text1 = "A\nB\nC";
     QString text2 = "A\nD\nC";
@@ -199,12 +199,12 @@ void SnapshotTests::test_SnapshotTesting_diff()
     qDebug().noquote() << result;
 }
 
-void SnapshotTests::test_SnapshotTesting_saveSnapshots()
+void Testcases::test_SnapshotTesting_saveSnapshots()
 {
     SnapshotTesting::saveSnapshots();
 }
 
-void SnapshotTests::test_SnapshotTesting_addClassIgnoredProperty()
+void Testcases::test_SnapshotTesting_addClassIgnoredProperty()
 {
     QString input = QtShell::realpath_strip(SRCDIR, "sample/Sample1.qml");
 
@@ -238,7 +238,7 @@ void SnapshotTests::test_SnapshotTesting_addClassIgnoredProperty()
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
 }
 
-void SnapshotTests::test_SnapshotTesting_capture_QObject()
+void Testcases::test_SnapshotTesting_capture_QObject()
 {
     QObject object;
 
@@ -247,7 +247,7 @@ void SnapshotTests::test_SnapshotTesting_capture_QObject()
     QCOMPARE(snapshot, QString(""));
 }
 
-void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot()
+void Testcases::test_SnapshotTesting_matchStoredSnapshot()
 {
     QFETCH(QString, input);
 
@@ -269,12 +269,12 @@ void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot()
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
 }
 
-void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot_data()
+void Testcases::test_SnapshotTesting_matchStoredSnapshot_data()
 {
     scanSamples();
 }
 
-void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot_expandAll()
+void Testcases::test_SnapshotTesting_matchStoredSnapshot_expandAll()
 {
     QFETCH(QString, input);
 
@@ -299,12 +299,12 @@ void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot_expandAll()
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
 }
 
-void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot_expandAll_data()
+void Testcases::test_SnapshotTesting_matchStoredSnapshot_expandAll_data()
 {
     scanSamples();
 }
 
-void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot_hideId()
+void Testcases::test_SnapshotTesting_matchStoredSnapshot_hideId()
 {
     QFETCH(QString, input);
 
@@ -329,12 +329,12 @@ void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot_hideId()
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
 }
 
-void SnapshotTests::test_SnapshotTesting_matchStoredSnapshot_hideId_data()
+void Testcases::test_SnapshotTesting_matchStoredSnapshot_hideId_data()
 {
     scanSamples();
 }
 
-void SnapshotTests::scanSamples()
+void Testcases::scanSamples()
 {
     QTest::addColumn<QString>("input");
 

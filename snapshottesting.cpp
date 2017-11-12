@@ -928,7 +928,7 @@ bool SnapshotTesting::ignoreAllMismatched()
 
 QString SnapshotTesting::capture(QObject *object, SnapshotTesting::Options options)
 {
-    if (options.captureWhenLoaded) {
+    if (options.captureWhenReady) {
         Private::subscribeOnReady(object);
     }
 

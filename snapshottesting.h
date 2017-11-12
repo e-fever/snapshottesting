@@ -13,7 +13,7 @@ namespace SnapshotTesting {
             expandAll = false;
             hideId = false;
             indentSize = 4;
-            captureWhenLoaded = true;
+            captureWhenReady = true;
         }
 
         bool captureVisibleItemOnly;
@@ -21,13 +21,14 @@ namespace SnapshotTesting {
         bool hideId;
         int indentSize;
 
-        /// Capture only if the component is loaded completely
-        bool captureWhenLoaded;
+        /// Capture only if the component is ready (Loader and Image are loaded completely)
+        bool captureWhenReady;
     };
 
     /// Set the file name to save the stored snapshots
     void setSnapshotsFile(const QString& file);
 
+    /// Get the file name of stored snapshots
     QString snapshotsFile();
 
     /// Load "snapshots" from the "snapshotsFile"

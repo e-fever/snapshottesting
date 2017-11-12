@@ -3,7 +3,7 @@
 #include <TestRunner>
 #include <QtQuickTest/quicktest.h>
 #include <QtShell>
-#include "snapshottests.h"
+#include "testcases.h"
 #include "snapshottesting.h"
 
 #if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
     TestRunner runner;
     runner.addImportPath("qrc:///");
-    runner.add<SnapshotTests>();
+    runner.add<Testcases>();
     runner.add(QString(SRCDIR) + "qmltests");
 
     bool error = runner.exec(app.arguments());
