@@ -5,7 +5,6 @@
     "QQuickItem": {
         "name": "Item",
         "defaultValues": {
-            "activeFocus": false,
             "activeFocusOnTab": false,
             "antialiasing": false,
             "baselineOffset": 0,
@@ -130,7 +129,6 @@
     },
     "QQuickButton": {
         "defaultValues": {
-            "activeFocusOnTab": true
         },
         "ignoreProperties": [
             "baselineOffset"
