@@ -204,6 +204,8 @@ void Testcases::test_grabImage()
     item->setParentItem(window.contentItem());
     window.show();
 
+    Automator::wait(2000);
+
     QFuture<QImage> future = grabImage(item);
 
     AConcurrent::await(future);
