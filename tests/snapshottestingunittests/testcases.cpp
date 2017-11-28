@@ -11,6 +11,7 @@
 #include <private/qqmlcontext_p.h>
 #include "automator.h"
 #include "testcases.h"
+#include "testablefunctions.h"
 #include "snapshottesting.h"
 #include "private/snapshottesting_p.h"
 
@@ -192,6 +193,11 @@ void Testcases::test_loading_config()
 
 void Testcases::test_grabImage()
 {
+    if (Testable::isCI()) {
+        qDebug() << "Skip this test in CI environment";
+        return;
+    }
+
     QQuickWindow window;
     QQmlEngine engine;
     QObject* object = createQmlComponent(&engine, "Item", "QtQuick", 2, 0);
