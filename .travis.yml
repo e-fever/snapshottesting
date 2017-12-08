@@ -20,5 +20,5 @@ script:
     - source qt-5.8.0.env
     - mkdir build
     - cd build
-    - run-unittests --qpa-platform minimal ../tests/snapshottestingunittests/snapshottestingunittests.pro
+    - run-unittests ../tests/snapshottestingunittests/snapshottestingunittests.pro
 

@@ -1401,4 +1401,14 @@ QFuture<QImage> SnapshotTesting::Private::grabImage(QQuickItem *item)
     return defer.future();
 }
 
+
+bool SnapshotTesting::tryMatchStoredSnapshot(const QString &name, const QString &snapshot)
+{
+    QVariantMap snapshots = SnapshotTesting::loadStoredSnapshots();
+
+    QString originalVersion = snapshots[name].toString();
+
+    return (originalVersion == snapshot);
+}
+
 Q_COREAPP_STARTUP_FUNCTION(init)
