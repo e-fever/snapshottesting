@@ -901,7 +901,7 @@ void SnapshotTesting::saveSnapshots()
     file.close();
 }
 
-void SnapshotTesting::setSnapshot(const QString &name, const QString &content)
+void SnapshotTesting::setSnapshotText(const QString &name, const QString &content)
 {
     m_snapshots[name] = content;
     m_snapshotsDirty = true;
@@ -953,7 +953,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
     qDebug().noquote() << diff;
 
     if (m_acceptAllMismatched) {
-        SnapshotTesting::setSnapshot(name, snapshot);
+        SnapshotTesting::setSnapshotText(name, snapshot);
         SnapshotTesting::saveSnapshots();
         return true;
     }
@@ -986,7 +986,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
             m_acceptAllMismatched = true;
         case 0x00004000: // Yes
         case 0x02000000:
-            SnapshotTesting::setSnapshot(name, snapshot);
+            SnapshotTesting::setSnapshotText(name, snapshot);
             SnapshotTesting::saveSnapshots();
             return true;
             break;
