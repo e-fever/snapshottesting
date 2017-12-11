@@ -221,6 +221,29 @@ void Testcases::test_grabImage()
     QCOMPARE(image.size(), QSize(200,300));
 }
 
+void Testcases::test_render()
+{
+    if (Testable::isCI()) {
+        qDebug() << "Skip this test in CI environment";
+        return;
+    }
+
+    qDebug() << "test_render";
+
+    QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "sample/Sample2.qml"));
+
+    AConcurrent::await(future, 3000);
+
+    QVERIFY(future.resultCount() > 0);
+
+    QImage image = future.result();
+
+    QCOMPARE(image.size(), QSize(640,480));
+
+    image.save(QtShell::realpath_strip(QTest::currentTestFunction()) + ".jpg");
+
+}
+
 void Testcases::test_SnapshotTesting_diff()
 {
     QString text1 = "A\nB\nC";

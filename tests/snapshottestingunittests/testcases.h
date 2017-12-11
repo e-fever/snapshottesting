@@ -30,6 +30,8 @@ private slots:
 
     void test_grabImage();
 
+    void test_render();
+
     /* Public API */
 
     void test_SnapshotTesting_diff();

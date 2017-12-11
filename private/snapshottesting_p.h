@@ -91,6 +91,8 @@ namespace SnapshotTesting {
         QObject* createQmlComponent(QQmlEngine* engine, QString componentName, QString package, int major, int minor);
 
         QFuture<QImage> grabImage(QQuickItem* item);
+
+        QFuture<QImage> render(const QString& source);
     }
 }
 

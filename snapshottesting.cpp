@@ -18,6 +18,7 @@
 #include <aconcurrent.h>
 #include <functional>
 #include <QQuickItemGrabResult>
+#include <QOpenGLFunctions>
 
 using namespace SnapshotTesting;
 using namespace SnapshotTesting::Private;
@@ -29,6 +30,11 @@ using namespace std;
 #include <cmath>
 #include <vector>
 #include <QFontDatabase>
+#include <QQuickRenderControl>
+#include <QQuickWindow>
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
+#include <QOpenGLFramebufferObject>
 #include "dtl/Sequence.hpp"
 #include "dtl/Lcs.hpp"
 #include "dtl/variables.hpp"
@@ -1401,6 +1407,169 @@ QFuture<QImage> SnapshotTesting::Private::grabImage(QQuickItem *item)
     return defer.future();
 }
 
+QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
+{
+
+    class RenderControl : public QQuickRenderControl
+    {
+    public:
+        RenderControl(QWindow *w) : m_window(w) { }
+        QWindow *renderWindow(QPoint *offset) Q_DECL_OVERRIDE {
+            if (offset)
+                *offset = QPoint(0, 0);
+            return m_window;
+        }
+
+    private:
+        QWindow *m_window;
+    };
+
+    class Process : public QWindow {
+    public:
+        Process() {
+            renderControl = new RenderControl(this);
+            window = new QQuickWindow(renderControl);
+            engine = new QQmlEngine();
+
+            if (!engine->incubationController()) {
+                engine->setIncubationController(window->incubationController());
+            }
+            component = 0;
+            surface = new QOffscreenSurface();
+            context = new QOpenGLContext();
+
+            QSurfaceFormat format;
+            format.setDepthBufferSize(16);
+            format.setStencilBufferSize(8);
+            context->setFormat(format);
+            context->create();
+
+            surface->setFormat(format);
+            surface->create();
+
+            fbo = 0;
+            initialized = false;
+
+            QObject::connect(window, &QQuickWindow::sceneGraphInitialized, [=]() mutable {
+
+                fbo = new QOpenGLFramebufferObject(window->size(), QOpenGLFramebufferObject::CombinedDepthStencil);
+                window->setRenderTarget(fbo);
+
+                qDebug() << "set render target";
+                render();
+            });
+
+        }
+
+        ~Process() {
+            qDebug() << "~Process";
+            context->makeCurrent(surface);
+            delete engine;
+            if (component) {
+                delete component;
+            }
+            delete surface;
+            if (fbo) {
+                delete fbo;
+            }
+        }
+
+        void start() {
+            qDebug() << "start" << source;
+            component = new QQmlComponent(engine, QUrl(source));
+
+            if (component->isError()) {
+                const QList<QQmlError> errorList = component->errors();
+
+                for (const QQmlError &error : errorList) {
+                    qWarning() << error.url() << error.line() << error;
+                }
+            }
+
+            QObject *rootObject = component->create();
+            QQuickItem* rootItem = qobject_cast<QQuickItem *>(rootObject);
+
+            if (!rootItem) {
+                qDebug() << "Not a QQuickItem type";
+            }
+
+            qreal width = rootItem->width();
+            qreal height = rootItem->height();
+            qDebug() << width << height << rootItem;
+
+            rootItem->setParentItem(window->contentItem());
+            window->setGeometry(0,0,width, height);
+
+            context->makeCurrent(surface);
+            renderControl->initialize(context);
+            initialized = true;
+        }
+
+        void render() {
+            if (!context->makeCurrent(surface)) {
+                qDebug() << "Failed";
+                return;
+            }
+
+            renderControl->polishItems();
+            renderControl->sync();
+            renderControl->render();
+
+            window->resetOpenGLState();
+
+            QOpenGLFramebufferObject::bindDefault();
+
+            context->functions()->glFlush();
+
+            qDebug() << fbo->toImage();
+            callback(fbo->toImage());
+        }
+
+        QWindow *owner;
+        QQuickWindow* window;
+        QQuickRenderControl* renderControl;
+        QQmlEngine* engine;
+        QOffscreenSurface* surface;
+        QQmlComponent* component;
+        QOpenGLContext *context;
+        QString source;
+        QOpenGLFramebufferObject *fbo;
+
+        std::function<void(QImage)> callback;
+        bool initialized;
+    };
+
+    auto defer = AsyncFuture::deferred<QImage>();
+
+    Process* process = new Process();
+    process->source = source;
+
+    QObject::connect(process->window, &QQuickWindow::sceneGraphInitialized, [=]() mutable {
+        qDebug() << "Initialzied";
+        defer.cancel();
+    });
+
+    QObject::connect(process->window, &QQuickWindow::sceneGraphInvalidated, [=]() {
+        qDebug() << "sceneGraphInvalidated";
+    });
+
+//    process->resize(1024,768);
+//    process->show();
+
+    process->callback = [=](QImage image) mutable {
+        defer.complete(image);
+        delete process;
+    };
+    process->start();
+
+//    qDebug() << process->context->makeCurrent(process->surface);
+//    process->renderControl->polishItems();
+//    process->renderControl->sync();
+//    process->renderControl->render();
+//    process->window->resetOpenGLState();
+
+    return defer.future();
+}
 
 bool SnapshotTesting::tryMatchStoredSnapshot(const QString &name, const QString &snapshot)
 {
@@ -1410,5 +1579,7 @@ bool SnapshotTesting::tryMatchStoredSnapshot(const QString &name, const QString 
 
     return (originalVersion == snapshot);
 }
+
+
 
 Q_COREAPP_STARTUP_FUNCTION(init)
