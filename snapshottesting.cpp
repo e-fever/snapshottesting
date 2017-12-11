@@ -1424,9 +1424,9 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
         QWindow *m_window;
     };
 
-    class Process : public QWindow {
+    class Renderer : public QWindow {
     public:
-        Process() {
+        Renderer() {
             renderControl = new RenderControl(this);
             window = new QQuickWindow(renderControl);
             engine = new QQmlEngine();
@@ -1454,28 +1454,33 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
 
                 fbo = new QOpenGLFramebufferObject(window->size(), QOpenGLFramebufferObject::CombinedDepthStencil);
                 window->setRenderTarget(fbo);
-
-                qDebug() << "set render target";
                 render();
             });
-
         }
 
-        ~Process() {
-            qDebug() << "~Process";
+        ~Renderer() {
             context->makeCurrent(surface);
+
             delete engine;
+
             if (component) {
                 delete component;
             }
-            delete surface;
+
+            delete window;
+            delete renderControl;
+
             if (fbo) {
                 delete fbo;
             }
+
+            context->doneCurrent();
+
+            delete surface;
+            delete context;
         }
 
-        void start() {
-            qDebug() << "start" << source;
+        void start(const QString& source) {
             component = new QQmlComponent(engine, QUrl(source));
 
             if (component->isError()) {
@@ -1490,12 +1495,13 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
             QQuickItem* rootItem = qobject_cast<QQuickItem *>(rootObject);
 
             if (!rootItem) {
-                qDebug() << "Not a QQuickItem type";
+                qDebug() << "render(): source is not a QQuickItem object";
+                defer.cancel();
+                return;
             }
 
             qreal width = rootItem->width();
             qreal height = rootItem->height();
-            qDebug() << width << height << rootItem;
 
             rootItem->setParentItem(window->contentItem());
             window->setGeometry(0,0,width, height);
@@ -1507,7 +1513,8 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
 
         void render() {
             if (!context->makeCurrent(surface)) {
-                qDebug() << "Failed";
+                qDebug() << "Failed to render";
+                defer.cancel();
                 return;
             }
 
@@ -1520,9 +1527,7 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
             QOpenGLFramebufferObject::bindDefault();
 
             context->functions()->glFlush();
-
-            qDebug() << fbo->toImage();
-            callback(fbo->toImage());
+            defer.complete(fbo->toImage());
         }
 
         QWindow *owner;
@@ -1532,41 +1537,24 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
         QOffscreenSurface* surface;
         QQmlComponent* component;
         QOpenGLContext *context;
-        QString source;
         QOpenGLFramebufferObject *fbo;
 
-        std::function<void(QImage)> callback;
+        AsyncFuture::Deferred<QImage> defer;
         bool initialized;
     };
 
     auto defer = AsyncFuture::deferred<QImage>();
 
-    Process* process = new Process();
-    process->source = source;
+    Renderer* renderer = new Renderer();
 
-    QObject::connect(process->window, &QQuickWindow::sceneGraphInitialized, [=]() mutable {
-        qDebug() << "Initialzied";
-        defer.cancel();
+    defer.subscribe([=]() {
+        delete renderer;
+    }, [=]() {
+        delete renderer;
     });
 
-    QObject::connect(process->window, &QQuickWindow::sceneGraphInvalidated, [=]() {
-        qDebug() << "sceneGraphInvalidated";
-    });
-
-//    process->resize(1024,768);
-//    process->show();
-
-    process->callback = [=](QImage image) mutable {
-        defer.complete(image);
-        delete process;
-    };
-    process->start();
-
-//    qDebug() << process->context->makeCurrent(process->surface);
-//    process->renderControl->polishItems();
-//    process->renderControl->sync();
-//    process->renderControl->render();
-//    process->window->resetOpenGLState();
+    renderer->defer = defer;
+    renderer->start(source);
 
     return defer.future();
 }

@@ -242,6 +242,8 @@ void Testcases::test_render()
 
     image.save(QtShell::realpath_strip(QTest::currentTestFunction()) + ".jpg");
 
+    // Run event loop to cleanup dynamic object
+    Automator::wait(100);
 }
 
 void Testcases::test_SnapshotTesting_diff()
