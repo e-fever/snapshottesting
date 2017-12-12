@@ -10,7 +10,7 @@ Item {
     property string originalVersion: ""
     property string currentVersion: ""
 
-    property url screenshot: ""
+    property string screenshot: ""
 
     property string monospaceFont: ""
 
@@ -47,6 +47,18 @@ Item {
                     font.family: monospaceFont
                     anchors.fill: parent
                     text: currentVersion
+                }
+            }
+        }
+
+        Tab {
+            title: "Current Screenshot"
+            active: screenshot !== ""
+            Item {
+
+                Image {
+                    anchors.centerIn: parent
+                    source: "data:image/png;base64," + contentView.screenshot
                 }
             }
         }

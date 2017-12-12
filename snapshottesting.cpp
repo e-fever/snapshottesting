@@ -997,7 +997,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
         dialog->setProperty("title", name);
 
         if (!screenshot.isNull()) {
-            dialog->setProperty("screenshot", toBase64(screenshot));
+            dialog->setProperty("screenshot", QString(toBase64(screenshot)));
         }
 
         QMetaObject::invokeMethod(dialog, "open");

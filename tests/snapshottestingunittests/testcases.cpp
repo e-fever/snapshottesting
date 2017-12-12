@@ -394,10 +394,12 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_hideId_data()
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
 {
+    /*
     if (Testable::isCI()) {
         qDebug() << "Skip this test in CI environment";
         return;
     }
+    */
 
     QFETCH(QString, input);
 

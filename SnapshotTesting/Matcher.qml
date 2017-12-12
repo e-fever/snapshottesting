@@ -15,14 +15,12 @@ Dialog {
     property alias previousSnapshot: content.originalVersion
     property alias snapshot: content.currentVersion
     property alias screenshot: content.screenshot
-
-    property string screenshot: ""
+    property alias monospaceFont: content.monospaceFont
 
     MatcherContentView {
         id: content
         implicitWidth: 640
         implicitHeight: 480
-        monospaceFont: component.monospaceFont
     }
 
     onRejected: {
