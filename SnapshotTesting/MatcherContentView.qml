@@ -53,7 +53,7 @@ Item {
 
         Tab {
             title: "Current Screenshot"
-            active: screenshot !== ""
+            visible: contentView.screenshot !== ""
             Item {
 
                 Image {

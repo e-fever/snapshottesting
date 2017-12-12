@@ -984,6 +984,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
     if (SnapshotTesting::interactiveEnabled() && !SnapshotTesting::ignoreAllMismatched()) {
         QQmlApplicationEngine engine;
         engine.addImportPath("qrc:///");
+
         engine.load(QUrl("qrc:///qt-project.org/imports/SnapshotTesting/Matcher.qml"));
 
         QObject* dialog = engine.rootObjects()[0];
@@ -997,6 +998,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
         dialog->setProperty("title", name);
 
         if (!screenshot.isNull()) {
+            qDebug() << screenshot;
             dialog->setProperty("screenshot", QString(toBase64(screenshot)));
         }
 
@@ -1507,7 +1509,25 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
             return component.create();
         }
 
-        void start(const QString& source) {
+        void start(QQuickItem* rootItem) {
+            qreal width = rootItem->width();
+            qreal height = rootItem->height();
+
+            if (width == 0 || height == 0) {
+                qWarning() << "render: Item's width or height is zero";
+                delete rootItem;
+                defer.cancel();
+                return;
+            }
+
+            rootItem->setParentItem(window->contentItem());
+            window->setGeometry(0,0,width, height);
+
+            context->makeCurrent(surface);
+            renderControl->initialize(context);
+        }
+
+        void run(const QString& source) {
 
             QObject *rootObject = load(source);
             if (!rootObject) {
@@ -1519,18 +1539,14 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
 
             if (!rootItem) {
                 qDebug() << "render(): source is not a QQuickItem object";
+                delete rootObject;
                 defer.cancel();
                 return;
             }
 
-            qreal width = rootItem->width();
-            qreal height = rootItem->height();
+            subscribeOnReady(rootItem);
 
-            rootItem->setParentItem(window->contentItem());
-            window->setGeometry(0,0,width, height);
-
-            context->makeCurrent(surface);
-            renderControl->initialize(context);
+            start(rootItem);
         }
 
         void render() {
@@ -1574,7 +1590,7 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
     });
 
     renderer->defer = defer;
-    renderer->start(source);
+    renderer->run(source);
 
     return defer.future();
 }

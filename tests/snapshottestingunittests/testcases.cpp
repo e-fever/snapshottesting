@@ -224,11 +224,6 @@ void Testcases::test_grabImage()
 
 void Testcases::test_render()
 {
-//    if (Testable::isCI()) {
-//        qDebug() << "Skip this test in CI environment";
-//        return;
-//    }
-
     qDebug() << "test_render";
 
     {
@@ -242,7 +237,21 @@ void Testcases::test_render()
 
         QCOMPARE(image.size(), QSize(640,480));
 
-        image.save(QtShell::realpath_strip(QTest::currentTestFunction()) + ".jpg");
+        image.save(QtShell::realpath_strip(QTest::currentTestFunction()) + "_Sample2.jpg");
+    }
+
+    {
+        QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "sample/Sample_Loader_Async.qml"));
+
+        AConcurrent::await(future, 3000);
+
+        QVERIFY(future.resultCount() > 0);
+
+        QImage image = future.result();
+
+        QCOMPARE(image.size(), QSize(434,506));
+
+        image.save(QtShell::realpath_strip(QTest::currentTestFunction()) + "_Sample_Loader_Async.jpg");
     }
 
     {
@@ -412,6 +421,7 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
     */
 
     QFETCH(QString, input);
+    qDebug() << input;
 
     QString fileName = QtShell::basename(input);
 
@@ -434,7 +444,13 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
     auto future = SnapshotTesting::Private::render(input);
     AConcurrent::await(future);
 
-    auto image = future.result();
+    QImage image;
+
+    if (!future.isCanceled()) {
+        image = future.result();
+    }
+
+    qDebug() << image;
 
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text, image));
 }
