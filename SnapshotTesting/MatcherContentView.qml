@@ -15,8 +15,10 @@ Item {
     property string monospaceFont: ""
 
     TabView {
+        id: tabView
         anchors.fill: parent
         anchors.bottomMargin: 40
+        clip: true
 
         Tab {
             title: "Diff"
@@ -50,18 +52,25 @@ Item {
                 }
             }
         }
+    }
 
-        Tab {
-            title: "Current Screenshot"
-            visible: contentView.screenshot !== ""
-            Item {
+    Component {
+        id: screenshotViewer
+        Item {
 
-                Image {
-                    anchors.centerIn: parent
-                    source: "data:image/png;base64," + contentView.screenshot
-                }
+            Image {
+                anchors.centerIn: parent
+                source: "data:image/png;base64," + contentView.screenshot
             }
         }
+    }
+
+    onScreenshotChanged: {
+        if (screenshot  === "") {
+            return;
+        }
+
+        tabView.addTab("Screenshot", screenshotViewer);
     }
 
     Text {
