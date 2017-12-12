@@ -195,6 +195,29 @@ static void assign(QVariantMap &dest, const QObject *source)
     }
 }
 
+
+static QByteArray toBase64(const QImage& image) {
+
+    QBuffer buffer;
+    buffer.open(QBuffer::ReadWrite);
+    QImageWriter writer(&buffer, "PNG");
+    writer.write(image);
+
+    return buffer.data().toBase64();
+}
+
+static void saveScreenshotImage(const QString& name, const QImage& image) {
+    if (image.isNull()) {
+        return;
+    }
+
+    QtShell::mkdir("-p", m_screenshotImagePath);
+
+    QString file = QtShell::realpath_strip(m_screenshotImagePath, name + ".png");
+
+    image.save(file);
+}
+
 QString SnapshotTesting::Private::classNameToComponentName(const QString &className)
 {
     QString res = className;
@@ -949,16 +972,6 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
     return matchStoredSnapshot(name, snapshot, QImage());
 }
 
-static QByteArray toBase64(const QImage& image) {
-
-    QBuffer buffer;
-    buffer.open(QBuffer::ReadWrite);
-    QImageWriter writer(&buffer, "PNG");
-    writer.write(image);
-
-    return buffer.data().toBase64();
-}
-
 bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &snapshot, const QImage& screenshot)
 {
     QVariantMap snapshots = SnapshotTesting::loadStoredSnapshots();
@@ -998,7 +1011,6 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
         dialog->setProperty("title", name);
 
         if (!screenshot.isNull()) {
-            qDebug() << screenshot;
             dialog->setProperty("screenshot", QString(toBase64(screenshot)));
         }
 
@@ -1017,6 +1029,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
         case 0x02000000:
             SnapshotTesting::setSnapshotText(name, snapshot);
             SnapshotTesting::saveSnapshots();
+            saveScreenshotImage(name, screenshot);
             return true;
             break;
         }
