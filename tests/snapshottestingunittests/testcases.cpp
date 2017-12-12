@@ -15,6 +15,7 @@
 #include "snapshottesting.h"
 #include "private/snapshottesting_p.h"
 
+using namespace QtShell;
 using namespace SnapshotTesting;
 using namespace SnapshotTesting::Private;
 
@@ -387,6 +388,46 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_hideId()
 }
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot_hideId_data()
+{
+    scanSamples();
+}
+
+void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
+{
+    if (Testable::isCI()) {
+        qDebug() << "Skip this test in CI environment";
+        return;
+    }
+
+    QFETCH(QString, input);
+
+    QString fileName = QtShell::basename(input);
+
+    QQmlApplicationEngine engine;
+
+    QUrl url = QUrl::fromLocalFile(input);
+
+    QQmlComponent component(&engine,url);
+    QQuickItem *childItem = qobject_cast<QQuickItem*>(component.create());
+    QVERIFY(childItem);
+
+    SnapshotTesting::Options options;
+    options.hideId = true;
+    QString name = QString("%1_%2").arg(QTest::currentTestFunction()).arg(fileName);
+
+    QString text = SnapshotTesting::capture(childItem, options);
+    text.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
+    text.replace(QString(SRCDIR), "");
+
+    auto future = SnapshotTesting::Private::render(input);
+    AConcurrent::await(future);
+
+    auto image = future.result();
+
+    QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text, image));
+}
+
+void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot_data()
 {
     scanSamples();
 }

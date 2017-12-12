@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
     }
 
     SnapshotTesting::setSnapshotsFile(QtShell::realpath_strip(SRCDIR, "snapshots.json"));
+    SnapshotTesting::setScreenshotImagePath(QtShell::realpath_strip(QtShell::pwd(), "screenshot"));
 
     TestRunner runner;
     runner.addImportPath("qrc:///");

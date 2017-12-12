@@ -16,6 +16,8 @@ Dialog {
     property alias snapshot: content.currentVersion
     property alias screenshot: content.screenshot
 
+    property string screenshot: ""
+
     MatcherContentView {
         id: content
         implicitWidth: 640

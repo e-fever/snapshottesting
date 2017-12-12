@@ -35,6 +35,7 @@ using namespace std;
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
+#include <QImageWriter>
 #include "dtl/Sequence.hpp"
 #include "dtl/Lcs.hpp"
 #include "dtl/variables.hpp"
@@ -53,6 +54,7 @@ using namespace std;
 /* Options */
 
 static QString m_snapshotFile;
+static QString m_screenshotImagePath;
 static QVariantMap m_snapshots;
 static bool m_snapshotsDirty = false;
 static bool m_interactiveEnabled = true;
@@ -943,9 +945,24 @@ QString SnapshotTesting::capture(QObject *object, SnapshotTesting::Options optio
     return prettyText(data, options);
 }
 
-bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &snapshot)
+bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &snapshot) {
+    return matchStoredSnapshot(name, snapshot, QImage());
+}
+
+static QByteArray toBase64(const QImage& image) {
+
+    QBuffer buffer;
+    buffer.open(QBuffer::ReadWrite);
+    QImageWriter writer(&buffer, "PNG");
+    writer.write(image);
+
+    return buffer.data().toBase64();
+}
+
+bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &snapshot, const QImage& screenshot)
 {
     QVariantMap snapshots = SnapshotTesting::loadStoredSnapshots();
+    Q_UNUSED(screenshot);
 
     QString originalVersion = snapshots[name].toString();
 
@@ -978,6 +995,10 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
         dialog->setProperty("previousSnapshot", originalVersion);
         dialog->setProperty("snapshot", snapshot);
         dialog->setProperty("title", name);
+
+        if (!screenshot.isNull()) {
+            dialog->setProperty("screenshot", toBase64(screenshot));
+        }
 
         QMetaObject::invokeMethod(dialog, "open");
         QCoreApplication::exec();
@@ -1386,8 +1407,6 @@ QStringList SnapshotTesting::Private::listContextUrls(QObject *object)
     return list;
 }
 
-
-
 QFuture<QImage> SnapshotTesting::Private::grabImage(QQuickItem *item)
 {
     QSize size = QSize(item->width(), item->height());
@@ -1402,7 +1421,6 @@ QFuture<QImage> SnapshotTesting::Private::grabImage(QQuickItem *item)
     AsyncFuture::observe(grabber.data(), &QQuickItemGrabResult::ready).subscribe([=]() mutable {
         defer.complete(grabber->image());
     });
-
 
     return defer.future();
 }
@@ -1568,6 +1586,9 @@ bool SnapshotTesting::tryMatchStoredSnapshot(const QString &name, const QString 
     return (originalVersion == snapshot);
 }
 
-
+void SnapshotTesting::setScreenshotImagePath(const QString &path)
+{
+    m_screenshotImagePath = path;
+}
 
 Q_COREAPP_STARTUP_FUNCTION(init)

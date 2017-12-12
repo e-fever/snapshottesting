@@ -5,6 +5,7 @@
 
 namespace SnapshotTesting {
 
+    /// Options for capture
     class Options {
     public:
 
@@ -31,6 +32,8 @@ namespace SnapshotTesting {
     /// Get the file name of stored snapshots
     QString snapshotsFile();
 
+    void setScreenshotImagePath(const QString& path);
+
     /// Load "snapshots" from the "snapshotsFile"
     QVariantMap loadStoredSnapshots();
 
@@ -51,6 +54,8 @@ namespace SnapshotTesting {
     QString capture(QObject* object, Options options = Options());
 
     bool matchStoredSnapshot(const QString& name, const QString& snapshot);
+
+    bool matchStoredSnapshot(const QString& name, const QString& snapshot, const QImage& screenshot);
 
     bool tryMatchStoredSnapshot(const QString& name, const QString& snapshot);
 
