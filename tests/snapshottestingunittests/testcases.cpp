@@ -224,24 +224,34 @@ void Testcases::test_grabImage()
 
 void Testcases::test_render()
 {
-    if (Testable::isCI()) {
-        qDebug() << "Skip this test in CI environment";
-        return;
-    }
+//    if (Testable::isCI()) {
+//        qDebug() << "Skip this test in CI environment";
+//        return;
+//    }
 
     qDebug() << "test_render";
 
-    QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "sample/Sample2.qml"));
+    {
+        QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "sample/Sample2.qml"));
 
-    AConcurrent::await(future, 3000);
+        AConcurrent::await(future, 3000);
 
-    QVERIFY(future.resultCount() > 0);
+        QVERIFY(future.resultCount() > 0);
 
-    QImage image = future.result();
+        QImage image = future.result();
 
-    QCOMPARE(image.size(), QSize(640,480));
+        QCOMPARE(image.size(), QSize(640,480));
 
-    image.save(QtShell::realpath_strip(QTest::currentTestFunction()) + ".jpg");
+        image.save(QtShell::realpath_strip(QTest::currentTestFunction()) + ".jpg");
+    }
+
+    {
+        QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "non-existed-qml.qml"));
+
+        AConcurrent::await(future, 3000);
+
+        QVERIFY(future.isCanceled());
+    }
 
     // Run event loop to cleanup dynamic object
     Automator::wait(100);

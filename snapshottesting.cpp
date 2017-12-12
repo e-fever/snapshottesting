@@ -1452,7 +1452,6 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
             if (!engine->incubationController()) {
                 engine->setIncubationController(window->incubationController());
             }
-            component = 0;
             surface = new QOffscreenSurface();
             context = new QOpenGLContext();
 
@@ -1466,7 +1465,6 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
             surface->create();
 
             fbo = 0;
-            initialized = false;
 
             QObject::connect(window, &QQuickWindow::sceneGraphInitialized, [=]() mutable {
 
@@ -1481,10 +1479,6 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
 
             delete engine;
 
-            if (component) {
-                delete component;
-            }
-
             delete window;
             delete renderControl;
 
@@ -1498,18 +1492,29 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
             delete context;
         }
 
-        void start(const QString& source) {
-            component = new QQmlComponent(engine, QUrl(source));
+        QObject* load(const QString& source) {
+            QQmlComponent component(engine, QUrl(source));
 
-            if (component->isError()) {
-                const QList<QQmlError> errorList = component->errors();
+            if (component.isError()) {
+                const QList<QQmlError> errorList = component.errors();
 
                 for (const QQmlError &error : errorList) {
                     qWarning() << error.url() << error.line() << error;
                 }
+                return 0;
             }
 
-            QObject *rootObject = component->create();
+            return component.create();
+        }
+
+        void start(const QString& source) {
+
+            QObject *rootObject = load(source);
+            if (!rootObject) {
+                defer.cancel();
+                return;
+            }
+
             QQuickItem* rootItem = qobject_cast<QQuickItem *>(rootObject);
 
             if (!rootItem) {
@@ -1526,7 +1531,6 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
 
             context->makeCurrent(surface);
             renderControl->initialize(context);
-            initialized = true;
         }
 
         void render() {
@@ -1553,12 +1557,10 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
         QQuickRenderControl* renderControl;
         QQmlEngine* engine;
         QOffscreenSurface* surface;
-        QQmlComponent* component;
         QOpenGLContext *context;
         QOpenGLFramebufferObject *fbo;
 
         AsyncFuture::Deferred<QImage> defer;
-        bool initialized;
     };
 
     auto defer = AsyncFuture::deferred<QImage>();
