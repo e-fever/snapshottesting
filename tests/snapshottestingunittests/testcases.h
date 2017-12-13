@@ -32,6 +32,8 @@ private slots:
 
     void test_render();
 
+    void test_ScreenshotBrowser();
+
     /* Public API */
 
     void test_SnapshotTesting_diff();

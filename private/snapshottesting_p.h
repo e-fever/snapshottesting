@@ -93,6 +93,9 @@ namespace SnapshotTesting {
         QFuture<QImage> grabImage(QQuickItem* item);
 
         QFuture<QImage> render(const QString& source);
+
+        QByteArray toBase64(const QImage& image);
+
     }
 }
 

@@ -266,6 +266,51 @@ void Testcases::test_render()
     Automator::wait(100);
 }
 
+void Testcases::test_ScreenshotBrowser()
+{
+    QImage image(QSize(320,240), QImage::Format_RGB32);
+    image.fill(QColor(255,0,0));
+
+    QString function = QTest::currentTestFunction();
+
+    QByteArray base64 = SnapshotTesting::Private::toBase64(image);
+
+    QQmlEngine engine;
+
+    QQuickWindow window;
+
+    QQmlComponent component(&engine, QUrl("qrc:///qt-project.org/imports/SnapshotTesting/ScreenshotBrowser.qml"));
+
+    QQuickItem* item = qobject_cast<QQuickItem*>(component.create());
+    QVERIFY(item);
+
+    item->setSize(QSize(640,480));
+    item->setParentItem(window.contentItem());
+    item->setProperty("screenshot", base64);
+
+    window.resize(QSize(item->width(), item->height()));
+    window.show();
+
+    {
+        QString snapshot = SnapshotTesting::capture(item);
+
+        QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Single", snapshot));
+    }
+
+
+    {
+        item->setProperty("previousScreenshot", base64);
+
+        QString snapshot = SnapshotTesting::capture(item);
+
+        QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Dual", snapshot));
+    }
+
+
+
+    delete item;
+}
+
 void Testcases::test_SnapshotTesting_diff()
 {
     QString text1 = "A\nB\nC";

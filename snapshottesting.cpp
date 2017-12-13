@@ -195,8 +195,7 @@ static void assign(QVariantMap &dest, const QObject *source)
     }
 }
 
-
-static QByteArray toBase64(const QImage& image) {
+QByteArray SnapshotTesting::Private::toBase64(const QImage& image) {
 
     QBuffer buffer;
     buffer.open(QBuffer::ReadWrite);
