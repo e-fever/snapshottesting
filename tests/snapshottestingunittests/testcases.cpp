@@ -291,8 +291,17 @@ void Testcases::test_ScreenshotBrowser()
     window.resize(QSize(item->width(), item->height()));
     window.show();
 
+    auto replace = [=](const QString& source) {
+        QString t = source;
+        t = t.replace(QRegExp("source: \".*\""),"");
+        t = t.replace(QRegExp("screenshot: \".*\""), "");
+        t = t.replace(QRegExp("[a-z]*Screenshot: \".*\""), "");
+        return t;
+    };
+
     {
         QString snapshot = SnapshotTesting::capture(item);
+        snapshot = replace(snapshot);
 
         QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Single", snapshot));
     }
@@ -302,6 +311,7 @@ void Testcases::test_ScreenshotBrowser()
         item->setProperty("previousScreenshot", base64);
 
         QString snapshot = SnapshotTesting::capture(item);
+        snapshot = replace(snapshot);
 
         QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Dual", snapshot));
     }
