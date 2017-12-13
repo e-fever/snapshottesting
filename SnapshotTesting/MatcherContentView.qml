@@ -58,8 +58,9 @@ Item {
         id: screenshotViewer
         Item {
 
-            Image {
-                anchors.centerIn: parent
+            ScaleToFitImage {
+                anchors.fill: parent
+                anchors.margins: 4
                 source: "data:image/png;base64," + contentView.screenshot
             }
         }
