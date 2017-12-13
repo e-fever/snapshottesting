@@ -1013,6 +1013,17 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
             dialog->setProperty("screenshot", QString(toBase64(screenshot)));
         }
 
+        if (!m_screenshotImagePath.isNull()) {
+            QString previosScreenshotFile = QtShell::realpath_strip(m_screenshotImagePath, name + ".png");
+            if (QFile::exists(previosScreenshotFile)) {
+                QImage previousScreenshot;
+                if (previousScreenshot.load(previosScreenshotFile)) {
+                    qDebug() << "set previous screenshot";
+                    dialog->setProperty("previousScreenshot", toBase64(previousScreenshot));
+                }
+            }
+        }
+
         QMetaObject::invokeMethod(dialog, "open");
         QCoreApplication::exec();
 

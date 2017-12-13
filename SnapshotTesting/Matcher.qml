@@ -16,6 +16,7 @@ Dialog {
     property alias snapshot: content.currentVersion
     property alias screenshot: content.screenshot
     property alias monospaceFont: content.monospaceFont
+    property alias previousScreenshot: content.previousScreenshot
 
     MatcherContentView {
         id: content

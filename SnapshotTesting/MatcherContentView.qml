@@ -11,6 +11,7 @@ Item {
     property string currentVersion: ""
 
     property string screenshot: ""
+    property string previousScreenshot: ""
 
     property string monospaceFont: ""
 
@@ -58,10 +59,11 @@ Item {
         id: screenshotViewer
         Item {
 
-            ScaleToFitImage {
+            ScreenshotBrowser {
                 anchors.fill: parent
                 anchors.margins: 4
-                source: "data:image/png;base64," + contentView.screenshot
+                screenshot: contentView.screenshot
+                previousScreenshot: contentView.previousScreenshot
             }
         }
     }
