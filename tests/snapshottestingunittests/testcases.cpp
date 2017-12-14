@@ -432,7 +432,9 @@ void Testcases::test_SnapshotTesting_capture_RadioButton()
 
         QVERIFY(item);
 
-        QString snapshot = SnapshotTesting::capture(item);
+        SnapshotTesting::Options options;
+        options.expandAll = true;
+        QString snapshot = SnapshotTesting::capture(item, options);
         qDebug() << snapshot;
         QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Normal", snapshot));
 

@@ -726,7 +726,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         QUrl baseUrl = obtainBaseUrl(object);
 
         if ( (!expandAll && topLevelBaseUrlList.indexOf(baseUrl) < 0) ||
-             (m_qtInternalContextUrls.indexOf(QtShell::dirname(baseUrl.toString())) >=0 )) {
+             (inQtInternalContextUrls(baseUrl))) {
             // Skip condition
             // 1) It don't have any context relatd to the top level context url
             // 2) The context belong to Qt's internal context
@@ -1126,6 +1126,16 @@ static void init() {
                 m_qtInternalContextUrls << QtShell::dirname(url);
             }
             button->deleteLater();
+        }
+
+        {
+            QObject* object = createQmlComponent(&engine, "RadioButtonStyle", "QtQuick.Controls.Styles", 1,0);
+            QStringList urls = listContextUrls(object);
+
+            foreach (QString url, urls) {
+                m_qtInternalContextUrls << QtShell::dirname(url);
+            }
+            object->deleteLater();
         }
     }
 
