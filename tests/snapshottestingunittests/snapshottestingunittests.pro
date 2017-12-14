@@ -35,7 +35,9 @@ DISTFILES +=     qpm.json     \
     sample/Sample9.qml \
     sample/Sample_QJSValue.qml \
     sample/Sample_Loader_Async.qml \
-    sample/CustomButton.qml
+    sample/CustomButton.qml \
+    sample/Sample_Layout.qml \
+    sample/Sample_Control1.qml
 
 HEADERS += \     
     testcases.h

@@ -44,6 +44,8 @@ private slots:
 
     void test_SnapshotTesting_capture_QObject();
 
+    void test_SnapshotTesting_capture_RadioButton();
+
     void test_SnapshotTesting_matchStoredSnapshot();
     void test_SnapshotTesting_matchStoredSnapshot_data();
 

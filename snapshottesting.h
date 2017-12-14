@@ -57,6 +57,7 @@ namespace SnapshotTesting {
 
     bool matchStoredSnapshot(const QString& name, const QString& snapshot, const QImage& screenshot);
 
+    /// Compare the input snapshot and stored snapshot. Returns true if they are matched. Otherwise, it is fale. Unlike matchStoredSnapshot(), it won't trigger UI.
     bool tryMatchStoredSnapshot(const QString& name, const QString& snapshot);
 
     void addClassIgnoredProperty(const QString &className , const QString& property);

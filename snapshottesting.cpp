@@ -1091,6 +1091,17 @@ static void init() {
             QObject* button = createQmlComponent(&engine, "Button", "QtQuick.Controls", 2 ,0);
             QStringList urls = listContextUrls(button);
             m_qtInternalContextUrls << QtShell::dirname(urls[0]);
+            button->deleteLater();
+        }
+
+        {
+            QObject* button = createQmlComponent(&engine, "RadioButton", "QtQuick.Controls", 1 ,0);
+            QStringList urls = listContextUrls(button);
+
+            foreach (QString url, urls) {
+                m_qtInternalContextUrls << QtShell::dirname(url);
+            }
+            button->deleteLater();
         }
     }
 

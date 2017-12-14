@@ -51,7 +51,13 @@ Item {
                 ScaleToFitImage {
                     anchors.fill: parent
                     anchors.margins: 4
-                    source: "data:image/png;base64," + screenshot
+                    source: {
+                        if (previousScreenshot === "") {
+                            return "";
+                        }
+
+                        return "data:image/png;base64," + previousScreenshot;
+                    }
                 }
             }
 
@@ -62,13 +68,7 @@ Item {
                 ScaleToFitImage {
                     anchors.fill: parent
                     anchors.margins: 4
-                    source: {
-                        if (previousScreenshot === "") {
-                            return "";
-                        }
-
-                        return "data:image/png;base64," + previousScreenshot;
-                    }
+                    source: "data:image/png;base64," + screenshot
                 }
             }
         }

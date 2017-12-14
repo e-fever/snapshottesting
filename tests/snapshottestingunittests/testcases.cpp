@@ -225,6 +225,7 @@ void Testcases::test_grabImage()
 void Testcases::test_render()
 {
     {
+        qDebug() << "render Sample2";
         QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "sample/Sample2.qml"));
 
         AConcurrent::await(future, 3000);
@@ -239,6 +240,7 @@ void Testcases::test_render()
     }
 
     {
+        qDebug() << "Render Sample_Loader_Async";
         QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "sample/Sample_Loader_Async.qml"));
 
         AConcurrent::await(future, 3000);
@@ -302,8 +304,11 @@ void Testcases::test_ScreenshotBrowser()
 
     Automator::wait(10);
 
+    SnapshotTesting::Options options;
+    options.expandAll = true;
+
     {
-        QString snapshot = SnapshotTesting::capture(item);
+        QString snapshot = SnapshotTesting::capture(item, options);
         snapshot = replace(snapshot);
 
         QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Single", snapshot));
@@ -312,7 +317,7 @@ void Testcases::test_ScreenshotBrowser()
     {
         item->setProperty("previousScreenshot", SnapshotTesting::Private::toBase64(image2));
 
-        QString snapshot = SnapshotTesting::capture(item);
+        QString snapshot = SnapshotTesting::capture(item, options);
         snapshot = replace(snapshot);
 
         QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Dual", snapshot));
@@ -323,7 +328,7 @@ void Testcases::test_ScreenshotBrowser()
 
         item->setProperty("combinedScreenshot", SnapshotTesting::Private::toBase64(combined));
 
-        QString snapshot = SnapshotTesting::capture(item);
+        QString snapshot = SnapshotTesting::capture(item, options);
         snapshot = replace(snapshot);
 
         QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Combined", snapshot));
@@ -391,6 +396,26 @@ void Testcases::test_SnapshotTesting_capture_QObject()
     QString snapshot = SnapshotTesting::capture(&object);
 
     QCOMPARE(snapshot, QString(""));
+}
+
+void Testcases::test_SnapshotTesting_capture_RadioButton()
+{
+    QQmlEngine engine;
+
+    QString qml = "import QtQuick 2.0; import QtQuick.Controls 1.1; Item { RadioButton {} }";
+
+    QQmlComponent comp (&engine);
+    comp.setData(qml.toUtf8(),QUrl());
+    QObject* ret = comp.create();
+
+    QQuickItem* item = qobject_cast<QQuickItem*>(ret);
+
+    QVERIFY(item);
+
+    QString snapshot = SnapshotTesting::capture(item);
+    qDebug() << snapshot;
+
+    item->deleteLater();
 }
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot()
@@ -510,8 +535,6 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
     if (!future.isCanceled()) {
         image = future.result();
     }
-
-    qDebug() << image;
 
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text, image));
 }
