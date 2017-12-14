@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QQuickItemGrabResult>
 #include <QQuickWindow>
+#include <QMetaObject>
 #include <aconcurrent.h>
 #include <private/qqmldata_p.h>
 #include <private/qqmlcontext_p.h>
@@ -426,6 +427,7 @@ void Testcases::test_SnapshotTesting_capture_RadioButton()
     QQmlEngine engine;
     QString function = QTest::currentTestFunction();
 
+
     {
         QString qml = "import QtQuick 2.0; import QtQuick.Controls 1.1; Item { RadioButton {} }";
 
@@ -445,6 +447,27 @@ void Testcases::test_SnapshotTesting_capture_RadioButton()
 
         item->deleteLater();
     }
+
+    {
+
+        QObject* object = createQmlComponent(&engine, "RadioButton", "QtQuick.Controls",1,1);
+        QQuickItem* item = qobject_cast<QQuickItem*>(object);
+        QVERIFY(item);
+
+        qDebug() << item << item->metaObject()->className();
+
+        qDebug() << item->metaObject()->superClass()->superClass()->className();
+
+        SnapshotTesting::Options options;
+        options.expandAll = true;
+        QString snapshot = SnapshotTesting::capture(item, options);
+        QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Single", snapshot));
+
+        item->deleteLater();
+
+    }
+
+
 }
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot()
