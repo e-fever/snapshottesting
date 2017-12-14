@@ -6,6 +6,8 @@ Item {
     height: 100
 
     RadioButton {
+        id: radioButton
+        objectName: "radioButton"
         text: "Radio Button"
     }
 

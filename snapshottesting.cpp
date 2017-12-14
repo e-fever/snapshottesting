@@ -77,7 +77,7 @@ static QMap<QString, QStringList> classIgnoredProperties;
 /// List of data type should not be processed in term of their meta type id
 static QList<int> forbiddenDataTypeList;
 
-std::function<QImage(const QImage&, const QImage&)> m_screenshotImageCombinator = SnapshotTesting::Private::combineImages;
+std::function<QImage(const QImage&, const QImage&)> m_screenshotImageCombinator;
 
 #define DEHYDRATE_FONT(dest, property, original, current, field) \
     if (original.field() != current.field()) { \
@@ -506,7 +506,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
                 header.comment = contextName;
             }
             return header;
-        }
+        }       
 
         // Step1 - find the name of the component according to the Qt's internal context url
 

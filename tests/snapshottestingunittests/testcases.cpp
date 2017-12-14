@@ -85,11 +85,14 @@ void Testcases::test_context()
     QQmlApplicationEngine engine;
 
     {
+        // Button
         QObject* object = createQmlComponent(&engine, "Button", "QtQuick.Controls", 2, 0);
         QVERIFY(object);
-        QVERIFY(listContextUrls(object).size() > 0);
+        QCOMPARE(listContextUrls(object).size(), 1);
 
-        qDebug() << "Button" << listContextUrls(object);
+        QQmlContext* context = qmlContext(object);
+        QVERIFY(context);
+        QVERIFY(context->contextObject());
 
         object->deleteLater();
     }
@@ -108,14 +111,12 @@ void Testcases::test_context()
 
         QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
         QVERIFY(object);
-        QVERIFY(listContextUrls(object).size() > 0);
+        QCOMPARE(listContextUrls(object).size(), 2);
 
         qDebug() << "CustomButton" << listContextUrls(object);
 
         object->deleteLater();
-
     }
-
 
     {
         QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample1.qml"));
@@ -126,15 +127,77 @@ void Testcases::test_context()
         QVERIFY(object);
         QQmlContext* context = qmlContext(object);
 
-        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample1"));
+        QCOMPARE(obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample1"));
 
         context = SnapshotTesting::Private::obtainCreationContext(object);
+
         QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample1"));
 
         QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Item"));
 
         QVERIFY(obtainCurrentScopeContext(object) == qmlContext(object));
+        delete object;
     }
+
+    {
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample2.qml"));
+
+        QQmlComponent component(&engine,url);
+
+        QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(object);
+
+        {
+            QObject* innerItem = object->findChild<QQuickItem*>("InnerItem");
+            QVERIFY(innerItem);
+
+            QCOMPARE(obtainComponentNameByCurrentScopeContext(innerItem), QString("Item"));
+
+        }
+    }
+
+    {
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample3.qml"));
+
+        QQmlComponent component(&engine,url);
+
+        QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(object);
+
+        {
+            QObject* item = object->findChild<QQuickItem*>("ListView");
+            QVERIFY(item);
+
+            QObjectList list = obtainChildrenObjectList(item);
+
+            QVERIFY(list.size() > 0);
+            QObject* child = list.first();
+            qDebug() << child;
+
+            QCOMPARE(obtainComponentNameByCurrentScopeContext(child), QString("Item"));
+        }
+
+        {
+            QObject* item = object->findChild<QQuickItem*>("Repeater");
+            QVERIFY(item);
+
+            QQuickItem* child;
+            QMetaObject::invokeMethod(item,"itemAt",Qt::DirectConnection,
+                                      Q_RETURN_ARG(QQuickItem*, child),
+                                      Q_ARG(int,0));
+            // obtainComponentNameByCurrentScopeContext can not obtain the current component name in this case
+            QCOMPARE(obtainComponentNameByCurrentScopeContext(child), QString("Sample3"));
+        }
+
+        {
+            QObject* innerItem = object->findChild<QQuickItem*>("InnerItem");
+            QVERIFY(innerItem);
+
+            QCOMPARE(obtainComponentNameByCurrentScopeContext(innerItem), QString("Item"));
+        }
+
+    }
+
 
     {
         QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample5.qml"));
@@ -144,10 +207,10 @@ void Testcases::test_context()
         QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
         QVERIFY(object);
         QQmlContext* context = qmlContext(object);
-        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample5"));
+        QCOMPARE(obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample5"));
 
         context = SnapshotTesting::Private::obtainCreationContext(object);
-        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample5Form"));
+        QCOMPARE(obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample5Form"));
 
         QVERIFY(obtainCurrentScopeContext(object) == qmlContext(object));
         QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Sample5Form"));
@@ -195,6 +258,25 @@ void Testcases::test_context()
 
         QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Item"));
         QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object, true), QString("Item"));
+
+        delete object;
+    }
+
+    {
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample_Control1.qml"));
+
+        QQmlComponent component(&engine,url);
+
+        QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(object);
+
+        {
+            QQuickItem *radioButton = qobject_cast<QQuickItem*>(object->findChild<QQuickItem*>("radioButton"));
+            QVERIFY(radioButton);
+
+            QQmlContext* context = obtainCurrentScopeContext(radioButton);
+            qDebug() << context->baseUrl();
+        }
     }
 }
 
