@@ -77,6 +77,8 @@ static QMap<QString, QStringList> classIgnoredProperties;
 /// List of data type should not be processed in term of their meta type id
 static QList<int> forbiddenDataTypeList;
 
+std::function<QImage(const QImage&, const QImage&)> m_screenshotImageCombinator = SnapshotTesting::Private::combineImages;
+
 #define DEHYDRATE_FONT(dest, property, original, current, field) \
     if (original.field() != current.field()) { \
         dest[property + "." + #field] = current.field(); \
@@ -1038,15 +1040,22 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
             dialog->setProperty("screenshot", QString(toBase64(screenshot)));
         }
 
+        QImage previousScreenshot;
+
         if (!m_screenshotImagePath.isNull()) {
-            QString previosScreenshotFile = QtShell::realpath_strip(m_screenshotImagePath, name + ".png");
+            QString previosScreenshotFile;
+             previosScreenshotFile = QtShell::realpath_strip(m_screenshotImagePath, name + ".png");
             if (QFile::exists(previosScreenshotFile)) {
-                QImage previousScreenshot;
                 if (previousScreenshot.load(previosScreenshotFile)) {
                     qDebug() << "set previous screenshot";
                     dialog->setProperty("previousScreenshot", toBase64(previousScreenshot));
                 }
             }
+        }
+
+        if (!previousScreenshot.isNull() && !screenshot.isNull()) {
+            QImage combinedScreenshot = m_screenshotImageCombinator(screenshot, previousScreenshot);
+            dialog->setProperty("combinedScreenshot", toBase64(combinedScreenshot));
         }
 
         QMetaObject::invokeMethod(dialog, "open");

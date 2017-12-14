@@ -349,7 +349,6 @@ void Testcases::test_ScreenshotBrowser()
         QMetaObject::invokeMethod(item, "showCombinedScreenshot");
 
         Automator automator(&engine);
-        automator.click("CombinedButton");
         Automator::wait(10);
 
         QString snapshot = SnapshotTesting::capture(item, options);

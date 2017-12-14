@@ -18,6 +18,8 @@ Dialog {
     property alias monospaceFont: content.monospaceFont
     property alias previousScreenshot: content.previousScreenshot
 
+    property alias combinedScreenshot: content.combinedScreenshot
+
     MatcherContentView {
         id: content
         implicitWidth: 640

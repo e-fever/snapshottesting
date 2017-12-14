@@ -13,6 +13,7 @@ Item {
     property string screenshot: ""
     property string previousScreenshot: ""
 
+    property string combinedScreenshot: ""
     property string monospaceFont: ""
 
     TabView {
@@ -64,6 +65,7 @@ Item {
                 anchors.margins: 4
                 screenshot: contentView.screenshot
                 previousScreenshot: contentView.previousScreenshot
+                combinedScreenshot: contentView.combinedScreenshot
             }
         }
     }
