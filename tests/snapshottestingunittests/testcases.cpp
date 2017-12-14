@@ -83,21 +83,38 @@ void Testcases::test_context()
 {
     QQmlApplicationEngine engine;
 
-    auto lsContext = listContextUrls;
-
     {
         QObject* object = createQmlComponent(&engine, "Button", "QtQuick.Controls", 2, 0);
         QVERIFY(object);
-        QVERIFY(lsContext(object).size() > 0);
+        QVERIFY(listContextUrls(object).size() > 0);
+
+        qDebug() << "Button" << listContextUrls(object);
+
         object->deleteLater();
     }
 
     {
         QObject* object = createQmlComponent(&engine, "Item", "QtQuick", 2, 0);
         QVERIFY(object);
-        QVERIFY(lsContext(object).size()  == 0);
+        QVERIFY(listContextUrls(object).size()  == 0);
         object->deleteLater();
     }
+
+    {
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/CustomButton.qml"));
+
+        QQmlComponent component(&engine,url);
+
+        QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(object);
+        QVERIFY(listContextUrls(object).size() > 0);
+
+        qDebug() << "CustomButton" << listContextUrls(object);
+
+        object->deleteLater();
+
+    }
+
 
     {
         QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample1.qml"));
@@ -107,6 +124,7 @@ void Testcases::test_context()
         QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
         QVERIFY(object);
         QQmlContext* context = qmlContext(object);
+
         QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample1"));
 
         context = SnapshotTesting::Private::obtainCreationContext(object);
@@ -401,21 +419,25 @@ void Testcases::test_SnapshotTesting_capture_QObject()
 void Testcases::test_SnapshotTesting_capture_RadioButton()
 {
     QQmlEngine engine;
+    QString function = QTest::currentTestFunction();
 
-    QString qml = "import QtQuick 2.0; import QtQuick.Controls 1.1; Item { RadioButton {} }";
+    {
+        QString qml = "import QtQuick 2.0; import QtQuick.Controls 1.1; Item { RadioButton {} }";
 
-    QQmlComponent comp (&engine);
-    comp.setData(qml.toUtf8(),QUrl());
-    QObject* ret = comp.create();
+        QQmlComponent comp (&engine);
+        comp.setData(qml.toUtf8(),QUrl());
+        QObject* ret = comp.create();
 
-    QQuickItem* item = qobject_cast<QQuickItem*>(ret);
+        QQuickItem* item = qobject_cast<QQuickItem*>(ret);
 
-    QVERIFY(item);
+        QVERIFY(item);
 
-    QString snapshot = SnapshotTesting::capture(item);
-    qDebug() << snapshot;
+        QString snapshot = SnapshotTesting::capture(item);
+        qDebug() << snapshot;
+        QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Normal", snapshot));
 
-    item->deleteLater();
+        item->deleteLater();
+    }
 }
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot()

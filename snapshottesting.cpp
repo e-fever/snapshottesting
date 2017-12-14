@@ -479,10 +479,23 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         return res;
     };
 
+    auto inQtInternalContextUrls = [=](const QUrl& url) {
+        return m_qtInternalContextUrls.indexOf(QtShell::dirname(url.toString())) >= 0;
+    };
+
+    auto obtainBaseUrl = [](QObject* object) {
+        QUrl baseUrl;
+        QQmlContext *context = qmlContext(object);
+        if (context) {
+            baseUrl = context->baseUrl();
+        }
+        return baseUrl;
+    };
+
     /// Obtain the item name in QML
     auto obtainItemHeader = [=,&topLevelContextName](QObject* object) {
         Header header;
-        QString result;
+        QString name;
 
         if (object == source) {
             header.name = SnapshotTesting::Private::obtainRootComponentName(object, options.expandAll);
@@ -493,16 +506,31 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             return header;
         }
 
-        result = SnapshotTesting::Private::obtainComponentNameByQuickClass(object);
+        // Step1 - find the name of the component according to the Qt's internal context url
+
+        QStringList baseUrls = listContextUrls(object);
+
+        while (baseUrls.size() > 0) {
+            QString baseUrl = baseUrls.takeLast();
+
+            if (inQtInternalContextUrls(baseUrl)) {
+                name = obtainComponentNameByBaseUrl(baseUrl);
+                break;
+            }
+        }
+
+        if (name.isNull()) {
+            name = SnapshotTesting::Private::obtainComponentNameByQuickClass(object);
+        }
 
         if (!expandAll && object != source) {
             QString contextName = obtainContextName(object);
             if (contextName != topLevelContextName && contextName != "") {
-                result = contextName;
+                name = contextName;
             }
         }
 
-        header.name = result;
+        header.name = name;
         if (options.expandAll) {
             QString comment = obtainComponentNameByClass(object);
             if (header.name != comment &&
@@ -695,11 +723,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             dest["$comment"] = header.comment;
         }
 
-        QUrl baseUrl;
-        QQmlContext *context = qmlContext(object);
-        if (context) {
-            baseUrl = context->baseUrl();
-        }
+        QUrl baseUrl = obtainBaseUrl(object);
 
         if ( (!expandAll && topLevelBaseUrlList.indexOf(baseUrl) < 0) ||
              (m_qtInternalContextUrls.indexOf(QtShell::dirname(baseUrl.toString())) >=0 )) {
@@ -1530,7 +1554,9 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
         }
 
         QObject* load(const QString& source) {
-            QQmlComponent component(engine, QUrl(source));
+            QUrl url = QUrl::fromLocalFile(source);
+            qDebug() << "load" << url;
+            QQmlComponent component(engine, url);
 
             if (component.isError()) {
                 const QList<QQmlError> errorList = component.errors();
