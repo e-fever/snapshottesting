@@ -15,6 +15,13 @@ Item {
         combinedButton.checked = true;
     }
 
+    function base64(data) {
+        if (data === "") {
+            return "";
+        }
+        return "data:image/png;base64," + data;
+    }
+
     ScaleToFitImage {
         id: singleImage
         anchors.fill: parent
@@ -37,6 +44,12 @@ Item {
                 id: sideBySideButton
                 text: "Side by Side"
                 checked: true
+                exclusiveGroup: displayMode
+            }
+
+            RadioButton {
+                id: overlappedButton
+                text: "Overlapped"
                 exclusiveGroup: displayMode
             }
 
@@ -83,6 +96,41 @@ Item {
                         anchors.fill: parent
                         anchors.margins: 4
                         source: "data:image/png;base64," + screenshot
+                    }
+                }
+            }
+
+            Item {
+                id: overlappedView
+                visible: overlappedButton.checked
+                enabled: visible
+                anchors.fill: parent
+                anchors.margins: 4
+                ScaleToFitImage {
+                    x: 0
+                    y: 0
+                    width: parent.width
+                    height: parent.height
+                    opacity: 0.5
+                    source: base64(previousScreenshot)
+
+                    MouseArea {
+                        anchors.fill: parent
+                        drag.target: parent
+                    }
+                }
+
+                ScaleToFitImage {
+                    x: 0
+                    y: 0
+                    width: parent.width
+                    height: parent.height
+                    opacity: 0.5
+                    source: base64(screenshot)
+
+                    MouseArea {
+                        anchors.fill: parent
+                        drag.target: parent
                     }
                 }
             }

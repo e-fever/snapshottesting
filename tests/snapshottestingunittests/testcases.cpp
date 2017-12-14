@@ -320,7 +320,7 @@ void Testcases::test_ScreenshotBrowser()
         return t;
     };
 
-    Automator::wait(10);
+    Automator::wait(100);
 
     SnapshotTesting::Options options;
     options.expandAll = true;
@@ -334,7 +334,7 @@ void Testcases::test_ScreenshotBrowser()
 
     {
         item->setProperty("previousScreenshot", SnapshotTesting::Private::toBase64(image2));
-        Automator::wait(10);
+        Automator::wait(100);
 
         QString snapshot = SnapshotTesting::capture(item, options);
         snapshot = replace(snapshot);

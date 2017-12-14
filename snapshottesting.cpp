@@ -1053,7 +1053,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
             }
         }
 
-        if (!previousScreenshot.isNull() && !screenshot.isNull()) {
+        if (!previousScreenshot.isNull() && !screenshot.isNull() && m_screenshotImageCombinator != nullptr) {
             QImage combinedScreenshot = m_screenshotImageCombinator(screenshot, previousScreenshot);
             dialog->setProperty("combinedScreenshot", toBase64(combinedScreenshot));
         }
