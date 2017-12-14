@@ -296,7 +296,7 @@ void Testcases::test_ScreenshotBrowser()
 
     QByteArray base64 = SnapshotTesting::Private::toBase64(image1);
 
-    QQmlEngine engine;
+    QQmlApplicationEngine engine;
 
     QQuickWindow window;
 
@@ -314,9 +314,9 @@ void Testcases::test_ScreenshotBrowser()
 
     auto replace = [=](const QString& source) {
         QString t = source;
-        t = t.replace(QRegExp("source: \"[a-zA-Z0-9+;:,\\\/]*\""),"");
-        t = t.replace(QRegExp("screenshot: \"[a-zA-Z0-9+;:,\\\/]*\""),"");
-        t = t.replace(QRegExp("[a-z]*Screenshot: \"[a-zA-Z0-9+;:,\\\/]*\""),"");
+        t = t.replace(QRegExp("source: \"[a-zA-Z0-9=+;:,/]*\""),"");
+        t = t.replace(QRegExp("screenshot: \"[a-zA-Z0-9=+;:,/]*\""),"");
+        t = t.replace(QRegExp("[a-z]*Screenshot: \"[a-zA-Z0-9=+;:,/]*\""),"");
         return t;
     };
 
@@ -334,6 +334,7 @@ void Testcases::test_ScreenshotBrowser()
 
     {
         item->setProperty("previousScreenshot", SnapshotTesting::Private::toBase64(image2));
+        Automator::wait(10);
 
         QString snapshot = SnapshotTesting::capture(item, options);
         snapshot = replace(snapshot);
@@ -345,6 +346,11 @@ void Testcases::test_ScreenshotBrowser()
         QImage combined = SnapshotTesting::Private::combineImages(image1, image2);
 
         item->setProperty("combinedScreenshot", SnapshotTesting::Private::toBase64(combined));
+        QMetaObject::invokeMethod(item, "showCombinedScreenshot");
+
+        Automator automator(&engine);
+        automator.click("CombinedButton");
+        Automator::wait(10);
 
         QString snapshot = SnapshotTesting::capture(item, options);
         snapshot = replace(snapshot);

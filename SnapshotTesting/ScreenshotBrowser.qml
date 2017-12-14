@@ -11,6 +11,10 @@ Item {
 
     property string combinedScreenshot: ""
 
+    function showCombinedScreenshot() {
+        combinedButton.checked = true;
+    }
+
     ScaleToFitImage {
         id: singleImage
         anchors.fill: parent
@@ -28,47 +32,71 @@ Item {
             Layout.fillHeight: true
             Layout.maximumHeight: 40
 
-             ExclusiveGroup { id: displayMode }
-             RadioButton {
-                 text: "Side by Side"
-                 checked: true
-                 exclusiveGroup: displayMode
-             }
+            ExclusiveGroup { id: displayMode }
+            RadioButton {
+                id: sideBySideButton
+                text: "Side by Side"
+                checked: true
+                exclusiveGroup: displayMode
+            }
 
-             RadioButton {
-                 text: "Combined"
-                 checked: false
-                 exclusiveGroup: displayMode
-             }
+            RadioButton {
+                id: combinedButton
+                text: "Combined"
+                objectName: "CombinedButton"
+                checked: false
+                visible: combinedScreenshot !== ""
+                exclusiveGroup: displayMode
+            }
         }
 
-        RowLayout {
-            anchors.fill: parent
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
 
-            Item {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                ScaleToFitImage {
-                    anchors.fill: parent
-                    anchors.margins: 4
-                    source: {
-                        if (previousScreenshot === "") {
-                            return "";
+            RowLayout {
+                id: sideBySideView
+                visible: sideBySideButton.checked
+                enabled: visible
+                anchors.fill: parent
+
+                Item {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    ScaleToFitImage {
+                        anchors.fill: parent
+                        anchors.margins: 4
+                        source: {
+                            if (previousScreenshot === "") {
+                                return "";
+                            }
+                            return "data:image/png;base64," + previousScreenshot;
                         }
+                    }
+                }
 
-                        return "data:image/png;base64," + previousScreenshot;
+                Item {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    ScaleToFitImage {
+                        anchors.fill: parent
+                        anchors.margins: 4
+                        source: "data:image/png;base64," + screenshot
                     }
                 }
             }
 
-            Item {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-
-                ScaleToFitImage {
-                    anchors.fill: parent
-                    anchors.margins: 4
-                    source: "data:image/png;base64," + screenshot
+            ScaleToFitImage {
+                anchors.fill: parent
+                anchors.margins: 4
+                visible: combinedButton.checked
+                enabled: visible
+                source: {
+                    if (combinedScreenshot === "") {
+                        return "";
+                    }
+                    return "data:image/png;base64," + combinedScreenshot;
                 }
             }
         }

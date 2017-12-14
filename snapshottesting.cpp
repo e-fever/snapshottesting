@@ -1565,7 +1565,6 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
 
         QObject* load(const QString& source) {
             QUrl url = QUrl::fromLocalFile(source);
-            qDebug() << "load" << url;
             QQmlComponent component(engine, url);
 
             if (component.isError()) {
