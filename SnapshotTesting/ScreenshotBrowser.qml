@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.0
 
 Item {
@@ -16,10 +17,30 @@ Item {
         source: "data:image/png;base64," + screenshot
     }
 
-    Item {
+    ColumnLayout {
         id: dualImage
         anchors.fill: parent
         visible: false
+        enabled: false
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.maximumHeight: 40
+
+             ExclusiveGroup { id: displayMode }
+             RadioButton {
+                 text: "Side by Side"
+                 checked: true
+                 exclusiveGroup: displayMode
+             }
+
+             RadioButton {
+                 text: "Combined"
+                 checked: false
+                 exclusiveGroup: displayMode
+             }
+        }
 
         RowLayout {
             anchors.fill: parent
@@ -69,6 +90,7 @@ Item {
             PropertyChanges {
                 target: dualImage
                 visible: true
+                enabled: true
             }
         },
         State {

@@ -7,6 +7,9 @@ Item {
 
     property alias sourceSize: image.sourceSize
 
+    property alias imageWidth: image.width
+    property alias imageHeight: image.height
+
     Image {
         id: image
         anchors.centerIn: parent

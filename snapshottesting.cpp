@@ -36,6 +36,7 @@ using namespace std;
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
 #include <QImageWriter>
+#include <QPainter>
 #include "dtl/Sequence.hpp"
 #include "dtl/Lcs.hpp"
 #include "dtl/variables.hpp"
@@ -960,7 +961,7 @@ bool SnapshotTesting::ignoreAllMismatched()
 QString SnapshotTesting::capture(QObject *object, SnapshotTesting::Options options)
 {
     if (options.captureOnReady) {
-        Private::subscribeOnReady(object);
+        Private::waitUntilReady(object);
     }
 
     QVariantMap data = dehydrate(object, options);
@@ -1221,7 +1222,7 @@ QObjectList SnapshotTesting::Private::obtainChildrenObjectList(QObject *object)
     return children;
 }
 
-bool SnapshotTesting::Private::subscribeOnReady(QObject *object, int timeout)
+bool SnapshotTesting::Private::waitUntilReady(QObject *object, int timeout)
 {
     auto onStatusChanged = [=](QObject* object) mutable {
         return AsyncFuture::observe(object,SIGNAL(statusChanged())).future();
@@ -1567,7 +1568,7 @@ QFuture<QImage> SnapshotTesting::Private::render(const QString &source)
                 return;
             }
 
-            subscribeOnReady(rootItem);
+            waitUntilReady(rootItem);
 
             start(rootItem);
         }
@@ -1630,6 +1631,29 @@ bool SnapshotTesting::tryMatchStoredSnapshot(const QString &name, const QString 
 void SnapshotTesting::setScreenshotImagePath(const QString &path)
 {
     m_screenshotImagePath = path;
+}
+
+QImage SnapshotTesting::Private::combineImages(const QImage &prev, const QImage &curr)
+{
+    QSize size(qMax(prev.width(), curr.width()), qMax(prev.height(), curr.height()));
+
+    QList<QImage> images;
+    images << prev << curr;
+
+    QImage canvas(size, QImage::Format_RGB32);
+    canvas.fill(QColor(0,0,0,0));
+
+    QPainter painter(&canvas);
+    painter.setOpacity(0.5);
+    foreach (QImage image, images) {
+        QSize s = image.size();
+        int x = (size.width() - s.width()) / 2;
+        int y = (size.height() - s.height()) / 2;
+        painter.drawImage(x,y, image);
+    }
+    painter.end();
+
+    return canvas;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

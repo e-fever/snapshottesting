@@ -79,7 +79,7 @@ namespace SnapshotTesting {
         void walk(QObject* object, std::function<bool(QObject*, QObject*)> predicate);
 
         /// Wait for a object loaded completely
-        bool subscribeOnReady(QObject* object, int timeout = 10000);
+        bool waitUntilReady(QObject* object, int timeout = 10000);
 
         QString obtainQmlPackage(QObject* object);
 
@@ -94,8 +94,10 @@ namespace SnapshotTesting {
 
         QFuture<QImage> render(const QString& source);
 
+        /// Convert an image to base64 coding
         QByteArray toBase64(const QImage& image);
 
+        QImage combineImages(const QImage& prev, const QImage& curr);
     }
 }
 

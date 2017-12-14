@@ -224,8 +224,6 @@ void Testcases::test_grabImage()
 
 void Testcases::test_render()
 {
-    qDebug() << "test_render";
-
     {
         QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "sample/Sample2.qml"));
 
@@ -268,12 +266,15 @@ void Testcases::test_render()
 
 void Testcases::test_ScreenshotBrowser()
 {
-    QImage image(QSize(320,240), QImage::Format_RGB32);
-    image.fill(QColor(255,0,0));
+    QImage image1(QSize(320,240), QImage::Format_RGB32);
+    image1.fill(QColor(255,0,0));
+
+    QImage image2(QSize(160,240), QImage::Format_RGB32);
+    image2.fill(QColor(0,0,255));
 
     QString function = QTest::currentTestFunction();
 
-    QByteArray base64 = SnapshotTesting::Private::toBase64(image);
+    QByteArray base64 = SnapshotTesting::Private::toBase64(image1);
 
     QQmlEngine engine;
 
@@ -293,11 +294,13 @@ void Testcases::test_ScreenshotBrowser()
 
     auto replace = [=](const QString& source) {
         QString t = source;
-        t = t.replace(QRegExp("source: \".*\""),"");
-        t = t.replace(QRegExp("screenshot: \".*\""), "");
-        t = t.replace(QRegExp("[a-z]*Screenshot: \".*\""), "");
+        t = t.replace(QRegExp("source: \"[a-zA-Z0-9+;:,\\\/]*\""),"");
+        t = t.replace(QRegExp("screenshot: \"[a-zA-Z0-9+;:,\\\/]*\""),"");
+        t = t.replace(QRegExp("[a-z]*Screenshot: \"[a-zA-Z0-9+;:,\\\/]*\""),"");
         return t;
     };
+
+    Automator::wait(10);
 
     {
         QString snapshot = SnapshotTesting::capture(item);
@@ -306,14 +309,25 @@ void Testcases::test_ScreenshotBrowser()
         QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Single", snapshot));
     }
 
-
     {
-        item->setProperty("previousScreenshot", base64);
+        item->setProperty("previousScreenshot", SnapshotTesting::Private::toBase64(image2));
 
         QString snapshot = SnapshotTesting::capture(item);
         snapshot = replace(snapshot);
 
         QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Dual", snapshot));
+    }
+
+    {
+        QImage combined = SnapshotTesting::Private::combineImages(image1, image2);
+
+        item->setProperty("combinedScreenshot", SnapshotTesting::Private::toBase64(combined));
+
+        QString snapshot = SnapshotTesting::capture(item);
+        snapshot = replace(snapshot);
+
+        QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Combined", snapshot));
+
     }
 
 
