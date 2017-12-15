@@ -506,39 +506,25 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
                 header.comment = contextName;
             }
             return header;
-        }       
-
-        // Step1 - find the name of the component according to the Qt's internal context url
-
-        QStringList baseUrls = listContextUrls(object);
-
-        while (baseUrls.size() > 0) {
-            QString baseUrl = baseUrls.takeLast();
-
-            if (inQtInternalContextUrls(baseUrl)) {
-                name = obtainComponentNameByBaseUrl(baseUrl);
-                break;
-            }
         }
 
+        QQmlContext* context = obtainBaseContext(object);
+        if (context) {
+            name = obtainComponentNameByBaseUrl(context->baseUrl());
+        }
         if (name.isNull()) {
-            name = SnapshotTesting::Private::obtainComponentNameByQuickClass(object);
+            name = obtainComponentNameByQuickClass(object);
         }
 
-        if (!expandAll && object != source) {
-            QString contextName = obtainContextName(object);
-            if (contextName != topLevelContextName && contextName != "") {
-                name = contextName;
-            }
-        }
 
         header.name = name;
+
         if (options.expandAll) {
-            QString comment = obtainComponentNameByClass(object);
-            if (header.name != comment &&
-               !comment.isNull() &&
-               comment != obtainComponentNameByQuickClass(object)) {
-               header.comment = comment;
+            QString rawTypename = obtainComponentNameByQuickClass(object);
+
+            if (header.name != rawTypename) {
+                header.comment = header.name;
+                header.name = rawTypename;
             }
         }
 
