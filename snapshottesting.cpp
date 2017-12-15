@@ -1746,7 +1746,6 @@ QQmlContext *SnapshotTesting::Private::obtainBaseContext(QObject *object)
 
         QQuickItem* item = qobject_cast<QQuickItem*>(object);
         if (item && item->parentItem()) {
-            qDebug() << item->parentItem();
             if (_containsContext(context, item->parentItem())) {
                 return true;
             }
@@ -1773,14 +1772,23 @@ QQmlContext *SnapshotTesting::Private::obtainBaseContext(QObject *object)
         return true;
     };
 
-    while (context) {
-        if (isBaseContext(context, object)) {
+    QList<QQmlContext*> list;
+    QQmlContext* c = context;
+    while (c) {
+        list << c;
+        c = c->parentContext();
+    }
+    QQmlContext* res = 0;
+
+    while (list.size() > 0) {
+        c = list.takeLast();
+        if (isBaseContext(c, object)) {
+            res = c;
             break;
         }
-        context = context->parentContext();
     }
 
-    return context;
+    return res;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

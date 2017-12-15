@@ -299,8 +299,7 @@ void Testcases::test_context()
             QQuickItem *radioButton = qobject_cast<QQuickItem*>(object->findChild<QQuickItem*>("radioButton"));
             QVERIFY(radioButton);
 
-            QQmlContext* context = obtainCurrentScopeContext(radioButton);
-            qDebug() << context->baseUrl();
+            QCOMPARE(componentNameByBaseContext(radioButton), QString("RadioButton"));
         }
     }
 }
