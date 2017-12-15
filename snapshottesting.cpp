@@ -307,7 +307,7 @@ QString SnapshotTesting::Private::obtainComponentNameByBaseUrl(const QUrl &baseU
     return info.baseName();
 }
 
-QString SnapshotTesting::Private::obtainComponentNameByBaseContext(QObject *object)
+QString SnapshotTesting::Private::obtainComponentNameByCreationContext(QObject *object)
 {
     QQmlContext* creationContext = SnapshotTesting::Private::obtainCreationContext(object);
 
@@ -1709,6 +1709,78 @@ QImage SnapshotTesting::Private::combineImages(const QImage &prev, const QImage 
     painter.end();
 
     return canvas;
+}
+
+
+
+QQmlContext *SnapshotTesting::Private::obtainBaseContext(QObject *object)
+{
+
+    QQmlContext* context = obtainCreationContext(object);
+
+    auto inContext = [=](QQmlContext* context, QObject* object) {
+        QQmlContext* c = obtainCreationContext(object);
+
+        while (c) {
+
+            if (c == context || (c->baseUrl() == context->baseUrl() && !c->baseUrl().isEmpty())) {
+                return true;
+            }
+            c = c->parentContext();
+        }
+        return false;
+    };
+
+    std::function<bool(QQmlContext* context, QObject* object)> _containsContext;
+
+    _containsContext = [&_containsContext, inContext](QQmlContext* context, QObject* object) {
+        if (inContext(context, object)) {
+            return true;
+        }
+
+        if (object->parent()) {
+            if (_containsContext(context, object->parent())) {
+                return true;
+            }
+        }
+
+        QQuickItem* item = qobject_cast<QQuickItem*>(object);
+        if (item && item->parentItem()) {
+            qDebug() << item->parentItem();
+            if (_containsContext(context, item->parentItem())) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    auto isBaseContext = [=](QQmlContext* context, QObject* object) {
+
+        if (object->parent()) {
+            if (_containsContext(context, object->parent())) {
+                return false;
+            }
+        }
+
+        QQuickItem* item = qobject_cast<QQuickItem*>(object);
+        if (item && item->parentItem()) {
+            if (_containsContext(context, item->parentItem())) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    while (context) {
+        if (isBaseContext(context, object)) {
+            break;
+        }
+        context = context->parentContext();
+    }
+
+    return context;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

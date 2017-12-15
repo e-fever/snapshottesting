@@ -84,6 +84,16 @@ void Testcases::test_context()
 {
     QQmlApplicationEngine engine;
 
+    auto componentNameByBaseContext = [](QObject * object) {
+        QQmlContext* context = obtainBaseContext(object);
+        QString res;
+        if (context) {
+            res = obtainComponentNameByBaseUrl(context->baseUrl());
+        }
+
+        return res;
+    };
+
     {
         // Button
         QObject* object = createQmlComponent(&engine, "Button", "QtQuick.Controls", 2, 0);
@@ -153,6 +163,18 @@ void Testcases::test_context()
 
             QCOMPARE(obtainComponentNameByCurrentScopeContext(innerItem), QString("Item"));
 
+            // The component don't have it's own scope
+            QCOMPARE(componentNameByBaseContext(innerItem), QString(""));
+
+        }
+
+        {
+            QObject* item = object->findChild<QQuickItem*>("item_sample1");
+            QVERIFY(item);
+
+            QCOMPARE(obtainComponentNameByCurrentScopeContext(item), QString("Sample1"));
+
+            QCOMPARE(componentNameByBaseContext(item), QString("Sample1"));
         }
     }
 
@@ -172,7 +194,6 @@ void Testcases::test_context()
 
             QVERIFY(list.size() > 0);
             QObject* child = list.first();
-            qDebug() << child;
 
             QCOMPARE(obtainComponentNameByCurrentScopeContext(child), QString("Item"));
         }
@@ -185,8 +206,12 @@ void Testcases::test_context()
             QMetaObject::invokeMethod(item,"itemAt",Qt::DirectConnection,
                                       Q_RETURN_ARG(QQuickItem*, child),
                                       Q_ARG(int,0));
+
             // obtainComponentNameByCurrentScopeContext can not obtain the current component name in this case
-            QCOMPARE(obtainComponentNameByCurrentScopeContext(child), QString("Sample3"));
+            QCOMPARE(obtainComponentNameByCurrentScopeContext(child), QString("Sample3")); // It should be "Item"
+
+            QCOMPARE(componentNameByBaseContext(child), QString(""));
+
         }
 
         {
@@ -239,7 +264,7 @@ void Testcases::test_context()
         QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
         QVERIFY(object);
 
-        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseContext(object), QString("Sample5Form"));
+        QCOMPARE(SnapshotTesting::Private::obtainComponentNameByCreationContext(object), QString("Sample5Form"));
 
         QCOMPARE(obtainComponentNameByBaseUrl(obtainCurrentScopeContext(object)->baseUrl()), QString("Sample6"));
 
