@@ -992,6 +992,15 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
     QString originalVersion = snapshots[name].toString();
 
     if (originalVersion == snapshot) {
+        // Save the screenshot if absent
+        if (!m_screenshotImagePath.isNull() && !screenshot.isNull()) {
+
+            QString file = QtShell::realpath_strip(m_screenshotImagePath, name + ".png");
+
+            if (!QFile::exists(file)) {
+                saveScreenshotImage(name, screenshot);
+            }
+        }
         return true;
     }
 
