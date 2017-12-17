@@ -34,23 +34,28 @@ Item {
         visible: false
         enabled: false
 
-        RowLayout {
+        Row {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.maximumHeight: 40
 
             ExclusiveGroup { id: displayMode }
+
             RadioButton {
                 id: sideBySideButton
                 text: "Side by Side"
                 checked: true
                 exclusiveGroup: displayMode
+                width: 120
+                height: 20
             }
 
             RadioButton {
                 id: overlappedButton
                 text: "Overlapped"
                 exclusiveGroup: displayMode
+                width: 120
+                height: 20
             }
 
             RadioButton {
@@ -60,6 +65,8 @@ Item {
                 checked: false
                 visible: combinedScreenshot !== ""
                 exclusiveGroup: displayMode
+                width: 120
+                height: 20
             }
         }
 
