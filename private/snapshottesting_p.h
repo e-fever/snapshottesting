@@ -42,10 +42,12 @@ namespace SnapshotTesting {
         QString classNameToComponentName(const QString &className);
 
         /// Obtain the context of the input object which should it be belonged to, but not its parent's scope
+        /// @deprecated It is replaced by obtainBaseContext
         QQmlContext* obtainCurrentScopeContext(QObject* object);
 
         QQmlContext* obtainCreationContext(QObject* object);
 
+        /// Obtain the context owned by the object.
         QQmlContext* obtainBaseContext(QObject* object);
 
         QString obtainComponentNameByBaseUrl(const QUrl& baseUrl);
@@ -102,6 +104,8 @@ namespace SnapshotTesting {
         QImage combineImages(const QImage& prev, const QImage& curr);
 
         QString converToPackageNotation(QUrl url);
+
+        QStringList findIgnorePropertyList(QObject* object, QMap<QString, QStringList> classIgnorePropertyList, QMap<QString, QStringList>ignoreListForComponent = QMap<QString, QStringList>() );
     }
 }
 

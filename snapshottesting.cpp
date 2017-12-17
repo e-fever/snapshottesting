@@ -72,7 +72,11 @@ static QMap<QString,QString> classNameToComponentNameTable;
 /// The default values of components
 static QMap<QString, QVariantMap> classDefaultValues;
 
+/// A list of ignored properties according to the class of the component
 static QMap<QString, QStringList> classIgnoredProperties;
+
+/// A list of ignored properties according to the package and component name
+static QMap<QString, QStringList> componentIgnoredProperties;
 
 /// List of data type should not be processed in term of their meta type id
 static QList<int> forbiddenDataTypeList;
@@ -566,19 +570,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     };
 
     auto obtainIgnoreList = [=](QObject* object) {
-        const QMetaObject* meta = object->metaObject();
-        QStringList result;
-        while (meta != 0) {
-            QString className = meta->className();
-            if (classIgnoredProperties.contains(className)) {
-                QStringList list = classIgnoredProperties[className];
-                result.append(list);
-            }
-
-            meta = meta->superClass();
-        }
-
-        return result;
+        return findIgnorePropertyList(object, classIgnoredProperties, componentIgnoredProperties);
     };
 
     auto _dehydrateFont = [=](QVariantMap& dest, QString property, QFont original , QFont current) {
@@ -1100,9 +1092,14 @@ static void init() {
     for (int i = 0 ; i < knownComponentList.size() ; i++) {
         QString key = knownComponentList[i];
         QVariantMap record =  map[key].toMap();
-        classNameToComponentNameTable[key] = record["name"].toString();
-        classDefaultValues[key] = record["defaultValues"].toMap();
-        classIgnoredProperties[key] = record["ignoreProperties"].toStringList();
+
+        if (!key.contains("@")) {
+            classNameToComponentNameTable[key] = record["name"].toString();
+            classDefaultValues[key] = record["defaultValues"].toMap();
+            classIgnoredProperties[key] = record["ignoreProperties"].toStringList();
+        } else {
+            componentIgnoredProperties[key] = record["ignoreProperties"].toStringList();
+        }
     }
 
     forbiddenDataTypeList << qMetaTypeId<QQmlListProperty<QQuickItem>>()
@@ -1372,7 +1369,6 @@ void SnapshotTesting::Private::walk(QObject *object, std::function<bool (QObject
 
     _walk(object, 0);
 }
-
 
 void SnapshotTesting::addClassIgnoredProperty(const QString &className, const QString &property)
 {
@@ -1707,7 +1703,6 @@ QImage SnapshotTesting::Private::combineImages(const QImage &prev, const QImage 
 }
 
 
-
 QQmlContext *SnapshotTesting::Private::obtainBaseContext(QObject *object)
 {
 
@@ -1786,7 +1781,6 @@ QQmlContext *SnapshotTesting::Private::obtainBaseContext(QObject *object)
     return res;
 }
 
-
 QString SnapshotTesting::Private::converToPackageNotation(QUrl url)
 {
     QString input = url.path();
@@ -1806,6 +1800,67 @@ QString SnapshotTesting::Private::converToPackageNotation(QUrl url)
 
     parts.takeLast();
     return parts.join(".");
+}
+
+QStringList SnapshotTesting::Private::findIgnorePropertyList(QObject *object, QMap<QString, QStringList> ignoreListForClasses, QMap<QString, QStringList> ignoreListForComponent)
+{
+    const QMetaObject* meta = object->metaObject();
+    QStringList result;
+    while (meta != 0) {
+        QString className = meta->className();
+        if (ignoreListForClasses.contains(className)) {
+            QStringList list = ignoreListForClasses[className];
+            result.append(list);
+        }
+
+        meta = meta->superClass();
+    }
+
+
+    QStringList baseUrls = listContextUrls(object);
+
+    while (baseUrls.size() > 0) {
+        QString baseUrl = baseUrls.takeLast();
+        QString package = converToPackageNotation(QUrl(baseUrl));
+        QString name = obtainComponentNameByBaseUrl(QUrl(baseUrl)) + "@";
+
+        QMapIterator<QString, QStringList> iter(ignoreListForComponent);
+
+        while (iter.hasNext()) {
+            iter.next();
+            if (!iter.key().startsWith(name)) {
+                continue;
+            }
+
+            QStringList token = iter.key().split("@");
+            if (package.endsWith(token.last())) {
+                result.append(iter.value());
+            }
+        }
+    }
+
+    return result;
+}
+
+void SnapshotTesting::addComponentIgnoreProperty(const QString &componentName, const QString &package, const QString &property)
+{
+    QString key = componentName + "@" + package;
+
+    QStringList list = componentIgnoredProperties[key];
+    if (list.indexOf(property) < 0) {
+        list.append(property);
+    }
+    componentIgnoredProperties[key] = list;
+}
+
+
+void SnapshotTesting::removeComponentIgnoreProperty(const QString &componentName, const QString &package, const QString &property)
+{
+    QString key = componentName + "@" + package;
+
+    QStringList list = componentIgnoredProperties[key];
+    list.removeAll(property);
+    componentIgnoredProperties[key] = list;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

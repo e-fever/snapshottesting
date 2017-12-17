@@ -139,5 +139,12 @@
             "mouseX",
             "mouseY"
         ]
+    },
+    "RadioButton@QtQuick.Controls": {
+        "ignoreProperties": [
+            "implicitHeight",
+            "implicitWidth",
+            "baselineOffset"
+        ]
     }
 }

@@ -63,4 +63,9 @@ namespace SnapshotTesting {
     void addClassIgnoredProperty(const QString &className , const QString& property);
 
     void removeClassIgnoredProperty(const QString &className , const QString& property);
+
+    void addComponentIgnoreProperty(const QString &componentName , const QString& package, const QString& property);
+
+    void removeComponentIgnoreProperty(const QString &componentName , const QString& package, const QString& property);
+
 }
