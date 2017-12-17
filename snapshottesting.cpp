@@ -1786,4 +1786,26 @@ QQmlContext *SnapshotTesting::Private::obtainBaseContext(QObject *object)
     return res;
 }
 
+
+QString SnapshotTesting::Private::converToPackageNotation(QUrl url)
+{
+    QString input = url.path();
+    QStringList token = input.split("/");
+
+    QStringList parts;
+    for (int i = 0 ; i < token.size(); i++) {
+        QString str = token[i];
+        if (str.isEmpty()) {
+            continue;
+        }
+
+        str.replace(QRegExp("\\.[0-9]+$"), "");
+
+        parts << str;
+    }
+
+    parts.takeLast();
+    return parts.join(".");
+}
+
 Q_COREAPP_STARTUP_FUNCTION(init)

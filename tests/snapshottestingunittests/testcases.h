@@ -34,6 +34,8 @@ private slots:
 
     void test_ScreenshotBrowser();
 
+    void test_convertToPackageNotation();
+
     /* Public API */
 
     void test_SnapshotTesting_diff();

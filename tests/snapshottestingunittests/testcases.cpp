@@ -470,6 +470,22 @@ void Testcases::test_ScreenshotBrowser()
     delete item;
 }
 
+void Testcases::test_convertToPackageNotation()
+{
+    {
+        QUrl url("qrc:///qt-project.org/imports/SnapshotTesting/ScreenshotBrowser.qml");
+
+        QCOMPARE(converToPackageNotation(url), QString("qt-project.org.imports.SnapshotTesting"));
+    }
+
+    {
+        QUrl url("qrc:///qt-project.org/imports/SnapshotTesting.2/ScreenshotBrowser.qml");
+
+        QCOMPARE(converToPackageNotation(url), QString("qt-project.org.imports.SnapshotTesting"));
+    }
+
+}
+
 void Testcases::test_SnapshotTesting_diff()
 {
     QString text1 = "A\nB\nC";

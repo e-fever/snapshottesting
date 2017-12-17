@@ -100,6 +100,8 @@ namespace SnapshotTesting {
         QByteArray toBase64(const QImage& image);
 
         QImage combineImages(const QImage& prev, const QImage& curr);
+
+        QString converToPackageNotation(QUrl url);
     }
 }
 
