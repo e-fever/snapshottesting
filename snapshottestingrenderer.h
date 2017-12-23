@@ -9,6 +9,7 @@
 #include <QQuickRenderControl>
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
+#include <private/snapshottestingoptions.h>
 
 namespace SnapshotTesting {
 
@@ -26,12 +27,18 @@ namespace SnapshotTesting {
 
         QImage screenshot() const;
 
+        Options options() const;
+
+        void setOptions(const Options &options);
+
     private:
         QPointer<QQmlEngine> m_engine;
 
         QString m_snapshot;
 
         QImage m_screenshot;
+
+        Options m_options;
 
         /* Internal variables */
         QWindow *owner;

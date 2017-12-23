@@ -347,50 +347,6 @@ void Testcases::test_grabImage()
     QCOMPARE(image.size(), QSize(200,300));
 }
 
-void Testcases::test_render()
-{
-    {
-        qDebug() << "render Sample2";
-        QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "sample/Sample2.qml"));
-
-        AConcurrent::await(future, 3000);
-
-        QVERIFY(future.resultCount() > 0);
-
-        QImage image = future.result();
-
-        QCOMPARE(image.size(), QSize(640,480));
-
-        image.save(QtShell::realpath_strip(QTest::currentTestFunction()) + "_Sample2.jpg");
-    }
-
-    {
-        qDebug() << "Render Sample_Loader_Async";
-        QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "sample/Sample_Loader_Async.qml"));
-
-        AConcurrent::await(future, 3000);
-
-        QVERIFY(future.resultCount() > 0);
-
-        QImage image = future.result();
-
-        QCOMPARE(image.size(), QSize(434,506));
-
-        image.save(QtShell::realpath_strip(QTest::currentTestFunction()) + "_Sample_Loader_Async.jpg");
-    }
-
-    {
-        QFuture<QImage> future = SnapshotTesting::Private::render(QtShell::realpath_strip(SRCDIR, "non-existed-qml.qml"));
-
-        AConcurrent::await(future, 3000);
-
-        QVERIFY(future.isCanceled());
-    }
-
-    // Run event loop to cleanup dynamic object
-    Automator::wait(100);
-}
-
 void Testcases::test_ScreenshotBrowser()
 {
     QImage image1(QSize(320,240), QImage::Format_RGB32);
@@ -684,51 +640,15 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
     QFETCH(QString, input);
 
     QString fileName = QtShell::basename(input);
-
-    QQmlApplicationEngine engine;
-
-    QUrl url = QUrl::fromLocalFile(input);
-
-    QQmlComponent component(&engine,url);
-    QQuickItem *childItem = qobject_cast<QQuickItem*>(component.create());
-    QVERIFY(childItem);
-
-    SnapshotTesting::Options options;
-    options.hideId = true;
-    QString name = QString("%1_%2").arg(QTest::currentTestFunction()).arg(fileName);
-
-    QString text = SnapshotTesting::capture(childItem, options);
-    text.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
-    text.replace(QString(SRCDIR), "");
-
-    auto future = SnapshotTesting::Private::render(input);
-    AConcurrent::await(future);
-
-    QImage image;
-
-    if (!future.isCanceled()) {
-        image = future.result();
-    }
-
-    QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text, image));
-}
-
-void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot_data()
-{
-    scanSamples();
-}
-
-void Testcases::test_Renderer()
-{
-    QFETCH(QString, input);
-
-    QString fileName = QtShell::basename(input);
     QString name = QString("%1_%2").arg(QTest::currentTestFunction()).arg(fileName);
 
     QQmlEngine engine;
     SnapshotTesting::Renderer renderer(&engine);
 
     SnapshotTesting::Options options;
+    options.hideId = true;
+
+    renderer.setOptions(options);
 
     QVERIFY(renderer.load(input));
 
@@ -740,10 +660,9 @@ void Testcases::test_Renderer()
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, snapshot, screenshot));
 }
 
-void Testcases::test_Renderer_data()
+void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot_data()
 {
     scanSamples();
-
 }
 
 void Testcases::scanSamples()

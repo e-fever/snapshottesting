@@ -143,8 +143,7 @@ bool SnapshotTesting::Renderer::load(const QString &source)
         return false;
     }
 
-    //@TODO - Options
-    m_snapshot = SnapshotTesting::capture(rootObject);
+    m_snapshot = SnapshotTesting::capture(rootObject, m_options);
 
     QQuickItem* rootItem = qobject_cast<QQuickItem *>(rootObject);
     if (!rootItem) {
@@ -161,6 +160,16 @@ bool SnapshotTesting::Renderer::load(const QString &source)
 QImage SnapshotTesting::Renderer::screenshot() const
 {
     return m_screenshot;
+}
+
+SnapshotTesting::Options SnapshotTesting::Renderer::options() const
+{
+    return m_options;
+}
+
+void SnapshotTesting::Renderer::setOptions(const SnapshotTesting::Options &options)
+{
+    m_options = options;
 }
 
 QString SnapshotTesting::Renderer::snapshot() const
