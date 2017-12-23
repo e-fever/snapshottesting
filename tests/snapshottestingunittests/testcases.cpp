@@ -718,6 +718,34 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot_data()
     scanSamples();
 }
 
+void Testcases::test_Renderer()
+{
+    QFETCH(QString, input);
+
+    QString fileName = QtShell::basename(input);
+    QString name = QString("%1_%2").arg(QTest::currentTestFunction()).arg(fileName);
+
+    QQmlEngine engine;
+    SnapshotTesting::Renderer renderer(&engine);
+
+    SnapshotTesting::Options options;
+
+    QVERIFY(renderer.load(input));
+
+    QImage screenshot = renderer.screenshot();
+    QString snapshot = renderer.snapshot();
+
+    snapshot.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
+
+    QVERIFY(SnapshotTesting::matchStoredSnapshot(name, snapshot, screenshot));
+}
+
+void Testcases::test_Renderer_data()
+{
+    scanSamples();
+
+}
+
 void Testcases::scanSamples()
 {
     QTest::addColumn<QString>("input");

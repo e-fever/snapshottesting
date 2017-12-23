@@ -3,6 +3,7 @@
 #include <QString>
 #include <QVariantMap>
 #include <private/snapshottestingoptions.h>
+#include <snapshottestingrenderer.h>
 
 namespace SnapshotTesting {
 

@@ -60,6 +60,10 @@ private slots:
     void test_SnapshotTesting_matchStoredSnapshot_screenshot();
     void test_SnapshotTesting_matchStoredSnapshot_screenshot_data();
 
+    /* Public Classes */
+    void test_Renderer();
+    void test_Renderer_data();
+
 private:
     void scanSamples();
 };
