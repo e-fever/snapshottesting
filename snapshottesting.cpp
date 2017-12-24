@@ -1268,7 +1268,8 @@ QObjectList SnapshotTesting::Private::obtainChildrenObjectList(QObject *object)
     return children;
 }
 
-bool SnapshotTesting::Private::waitUntilReady(QObject *object, int timeout)
+
+QFuture<void> SnapshotTesting::Private::whenReady(QObject *object)
 {
     auto onStatusChanged = [=](QObject* object) mutable {
         return AsyncFuture::observe(object,SIGNAL(statusChanged())).future();
@@ -1312,7 +1313,9 @@ bool SnapshotTesting::Private::waitUntilReady(QObject *object, int timeout)
     });
 
     if (futures.size() == 0) {
-        return true;
+        auto defer = AsyncFuture::deferred<void>();
+        defer.complete();
+        return defer.future();
     }
 
     auto combinator = AsyncFuture::combine();
@@ -1320,15 +1323,22 @@ bool SnapshotTesting::Private::waitUntilReady(QObject *object, int timeout)
         combinator << futures[i];
     }
 
+    return combinator.future();
+}
+
+bool SnapshotTesting::Private::waitUntilReady(QObject *object, int timeout)
+{
     auto defer = AsyncFuture::deferred<void>();
-    defer.complete(combinator.future());
+
+    QFuture<void> ready = whenReady(object);
+
+    defer.complete(ready);
 
     QTimer::singleShot(timeout, [=]() mutable {
         defer.cancel();
     });
 
     auto future = defer.future();
-
     AConcurrent::await(future);
 
     if (future.isCanceled()) {
@@ -1693,5 +1703,7 @@ void SnapshotTesting::removeComponentIgnoreProperty(const QString &componentName
     list.removeAll(property);
     componentIgnoredProperties[key] = list;
 }
+
+
 
 Q_COREAPP_STARTUP_FUNCTION(init)
