@@ -1271,6 +1271,10 @@ QObjectList SnapshotTesting::Private::obtainChildrenObjectList(QObject *object)
 
 QFuture<void> SnapshotTesting::Private::whenReady(QObject *object)
 {
+    if (object == 0) {
+        return QFuture<void>();
+    }
+
     auto onStatusChanged = [=](QObject* object) mutable {
         return AsyncFuture::observe(object,SIGNAL(statusChanged())).future();
     };

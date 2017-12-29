@@ -10,6 +10,8 @@
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
 #include <private/snapshottestingoptions.h>
+#include <QFuture>
+#include <asyncfuture.h>
 
 namespace SnapshotTesting {
 
@@ -23,30 +25,29 @@ namespace SnapshotTesting {
 
         bool load(const QString& source);
 
-        QString snapshot() const;
+        QFuture<void> whenReady();
 
-        QImage screenshot() const;
+        void waitWhenReady(int timeout = -1);
 
-        Options options() const;
+        QString capture(SnapshotTesting::Options options = SnapshotTesting::Options());
 
-        void setOptions(const Options &options);
+        QFuture<QImage> grabScreenshot();
 
     private:
+        QImage render();
+
         QPointer<QQmlEngine> m_engine;
 
-        QString m_snapshot;
-
-        QImage m_screenshot;
-
-        Options m_options;
-
         /* Internal variables */
+        AsyncFuture::Deferred<void> initialized;
         QWindow *owner;
         QQuickWindow* window;
         QQuickRenderControl* renderControl;
         QOffscreenSurface* surface;
         QOpenGLContext *context;
         QOpenGLFramebufferObject *fbo;
+
+        QObject* m_item;
     };
 
 }

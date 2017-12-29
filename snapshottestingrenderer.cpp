@@ -4,6 +4,7 @@
 #include <aconcurrent.h>
 #include "snapshottestingrenderer.h"
 #include "snapshottesting.h"
+#include "private/snapshottesting_p.h"
 
 SnapshotTesting::Renderer::Renderer(QQmlEngine* engine) : m_engine(engine)
 {
@@ -38,12 +39,17 @@ SnapshotTesting::Renderer::Renderer(QQmlEngine* engine) : m_engine(engine)
     surface->setFormat(format);
     surface->create();
 
+    m_item = 0;
     fbo = 0;
 }
 
 SnapshotTesting::Renderer::~Renderer()
 {
     context->makeCurrent(surface);
+
+    if (m_item) {
+        delete m_item;
+    }
 
     delete owner;
     delete window;
@@ -78,8 +84,7 @@ bool SnapshotTesting::Renderer::load(const QString &source)
         return component.create();
     };
 
-    auto defer = AsyncFuture::deferred<void>();
-
+    /*
     auto _render = [=]() {
         auto d = defer;
 
@@ -103,37 +108,42 @@ bool SnapshotTesting::Renderer::load(const QString &source)
 
         d.complete();
     };
+    */
 
     auto _init = [=](QObject* rootObject) {
-        auto d = defer;
         QQuickItem* rootItem = qobject_cast<QQuickItem *>(rootObject);
 
         if (!rootItem) {
-            d.cancel();
-            return;
+            return false;
         }
 
         QObject::connect(window, &QQuickWindow::sceneGraphInitialized, [=]() mutable {
 
             fbo = new QOpenGLFramebufferObject(window->size(), QOpenGLFramebufferObject::CombinedDepthStencil);
             window->setRenderTarget(fbo);
-            _render();
+            render();
+            initialized.complete();
         });
 
-        qreal width = rootItem->width();
-        qreal height = rootItem->height();
-
-        if (width == 0 || height == 0) {
-            qWarning() << "render: Item's width or height is zero";
-            d.cancel();
-            return;
-        }
+        auto updateGeom = [=]() {
+            qreal width = rootItem->width();
+            qreal height = rootItem->height();
+            if (width == 0 || height == 0) {
+                width = 10;
+                height = 10;
+            }
+            window->setGeometry(0,0,width, height);
+        };
 
         rootItem->setParentItem(window->contentItem());
-        window->setGeometry(0,0,width, height);
-
+        updateGeom();
         context->makeCurrent(surface);
         renderControl->initialize(context);
+
+        QObject::connect(rootItem , &QQuickItem::widthChanged, updateGeom);
+        QObject::connect(rootItem , &QQuickItem::heightChanged, updateGeom);
+
+        return true;
     };
 
     QObject* rootObject = _create(source);
@@ -143,7 +153,7 @@ bool SnapshotTesting::Renderer::load(const QString &source)
         return false;
     }
 
-    m_snapshot = SnapshotTesting::capture(rootObject, m_options);
+    m_item = rootObject;
 
     QQuickItem* rootItem = qobject_cast<QQuickItem *>(rootObject);
     if (!rootItem) {
@@ -151,30 +161,64 @@ bool SnapshotTesting::Renderer::load(const QString &source)
     }
 
     _init(rootItem);
-
-    AConcurrent::await(defer.future());
-
     return true;
 }
 
-QImage SnapshotTesting::Renderer::screenshot() const
+QFuture<void> SnapshotTesting::Renderer::whenReady()
 {
-    return m_screenshot;
+    return SnapshotTesting::Private::whenReady(m_item);
 }
 
-SnapshotTesting::Options SnapshotTesting::Renderer::options() const
+void SnapshotTesting::Renderer::waitWhenReady(int timeout)
 {
-    return m_options;
+    QFuture<void> future = whenReady();
+    AConcurrent::await(future, timeout);
 }
 
-void SnapshotTesting::Renderer::setOptions(const SnapshotTesting::Options &options)
+QString SnapshotTesting::Renderer::capture(SnapshotTesting::Options options)
 {
-    m_options = options;
+    if (!m_item) {
+        return QString();
+    }
+
+    return SnapshotTesting::capture(m_item, options);
 }
 
-QString SnapshotTesting::Renderer::snapshot() const
+QFuture<QImage> SnapshotTesting::Renderer::grabScreenshot()
 {
-    return m_snapshot;
+    QQuickItem* quickItem = qobject_cast<QQuickItem*>(m_item);
+
+    if (!quickItem || quickItem->width() == 0 || quickItem->height() == 0) {
+        return QFuture<QImage>();
+    }
+
+    return initialized.subscribe([=]() {
+        return render();
+    }).future();
+}
+
+QImage SnapshotTesting::Renderer::render()
+{
+    if (!context->makeCurrent(surface)) {
+        qDebug() << "Failed to render";
+        return QImage();
+    }
+
+    if (window->width() == 0 || window->height() == 0) {
+        return QImage();
+    }
+
+    renderControl->polishItems();
+    renderControl->sync();
+    renderControl->render();
+
+    window->resetOpenGLState();
+
+    QOpenGLFramebufferObject::bindDefault();
+
+    context->functions()->glFlush();
+
+    return fbo->toImage();
 }
 
 QPointer<QQmlEngine> SnapshotTesting::Renderer::engine() const

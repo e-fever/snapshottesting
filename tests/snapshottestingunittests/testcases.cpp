@@ -648,12 +648,20 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
     SnapshotTesting::Options options;
     options.hideId = true;
 
-    renderer.setOptions(options);
-
     QVERIFY(renderer.load(input));
 
-    QImage screenshot = renderer.screenshot();
-    QString snapshot = renderer.snapshot();
+    renderer.waitWhenReady();
+
+    QString snapshot = renderer.capture(options);
+
+    auto future = renderer.grabScreenshot();
+    AConcurrent::await(future);
+
+    QImage screenshot;
+
+    if (!future.isCanceled()) {
+        screenshot = future.result();
+    }
 
     snapshot.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
 
