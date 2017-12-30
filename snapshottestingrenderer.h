@@ -31,7 +31,7 @@ namespace SnapshotTesting {
 
         QString capture(SnapshotTesting::Options options = SnapshotTesting::Options());
 
-        QFuture<QImage> grabScreenshot();
+        QImage grabScreenshot();
 
         /// The loaded item
         QObject *item() const;

@@ -58,6 +58,9 @@ private slots:
     void test_SnapshotTesting_matchStoredSnapshot_screenshot();
     void test_SnapshotTesting_matchStoredSnapshot_screenshot_data();
 
+    void test_SnapshotTesting_createTest();
+    void test_SnapshotTesting_createTest_data();
+
 private:
     void scanSamples();
 };

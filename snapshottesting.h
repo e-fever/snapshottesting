@@ -4,8 +4,11 @@
 #include <QVariantMap>
 #include <private/snapshottestingoptions.h>
 #include <snapshottestingrenderer.h>
+#include <snapshottestingtest.h>
 
 namespace SnapshotTesting {
+
+    Test createTest();
 
     /// Set the file name to save the stored snapshots
     void setSnapshotsFile(const QString& file);

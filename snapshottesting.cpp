@@ -10,6 +10,7 @@
 #include <QQmlComponent>
 #include <QQuickItem>
 #include <QBuffer>
+#include <QTest>
 #include <asyncfuture.h>
 #include "snapshottesting.h"
 #include <private/qqmldata_p.h>
@@ -1709,5 +1710,11 @@ void SnapshotTesting::removeComponentIgnoreProperty(const QString &componentName
 }
 
 
+SnapshotTesting::Test SnapshotTesting::createTest()
+{
+    SnapshotTesting::Test test;
+    test.setName(QTest::currentTestFunction());
+    return test;
+}
 
 Q_COREAPP_STARTUP_FUNCTION(init)

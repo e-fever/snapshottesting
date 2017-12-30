@@ -12,9 +12,11 @@ HEADERS += \
     $$PWD/snapshottestingadapter.h \
     $$PWD/private/snapshottesting_p.h \
     $$PWD/private/snapshottestingoptions.h \
-    $$PWD/snapshottestingrenderer.h
+    $$PWD/snapshottestingrenderer.h \
+    $$PWD/snapshottestingtest.h
 
 SOURCES += \
     $$PWD/snapshottesting.cpp \
     $$PWD/snapshottestingadapter.cpp \
-    $$PWD/snapshottestingrenderer.cpp
+    $$PWD/snapshottestingrenderer.cpp \
+    $$PWD/snapshottestingtest.cpp

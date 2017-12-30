@@ -653,15 +653,7 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
     renderer.waitWhenStill(1000);
 
     QString snapshot = renderer.capture(options);
-
-    auto future = renderer.grabScreenshot();
-    AConcurrent::await(future);
-
-    QImage screenshot;
-
-    if (!future.isCanceled()) {
-        screenshot = future.result();
-    }
+    QImage screenshot = renderer.grabScreenshot();;
 
     snapshot.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
 
@@ -669,6 +661,36 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
 }
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot_data()
+{
+    scanSamples();
+}
+
+void Testcases::test_SnapshotTesting_createTest()
+{
+    QFETCH(QString, input);
+
+    QString fileName = QtShell::basename(input);
+
+    QQmlEngine engine;
+    Renderer renderer(&engine);
+    QVERIFY(renderer.load(input));
+
+    auto test = SnapshotTesting::createTest();
+
+    QCOMPARE(test.name(), QString(QTest::currentTestFunction()));
+
+    test.setSuffix(QString("_") + fileName);
+
+    QString snapshot = test.capture(renderer.item());
+    snapshot.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
+    snapshot.replace(QString(SRCDIR), "");
+
+    QImage screenshot = renderer.grabScreenshot();
+
+    QVERIFY(test.match(snapshot, screenshot));
+}
+
+void Testcases::test_SnapshotTesting_createTest_data()
 {
     scanSamples();
 }

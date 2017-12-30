@@ -160,17 +160,26 @@ QString SnapshotTesting::Renderer::capture(SnapshotTesting::Options options)
     return SnapshotTesting::capture(m_item, options);
 }
 
-QFuture<QImage> SnapshotTesting::Renderer::grabScreenshot()
+QImage SnapshotTesting::Renderer::grabScreenshot()
 {
     QQuickItem* quickItem = qobject_cast<QQuickItem*>(m_item);
 
     if (!quickItem || quickItem->width() == 0 || quickItem->height() == 0) {
-        return QFuture<QImage>();
+        return QImage();
     }
 
-    return initialized.subscribe([=]() {
+    auto future = initialized.subscribe([=]() {
         return render();
     }).future();
+
+    AConcurrent::await(future);
+
+    QImage res;
+    if (!future.isCanceled()) {
+        res = future.result();
+    }
+
+    return res;
 }
 
 QImage SnapshotTesting::Renderer::render()
