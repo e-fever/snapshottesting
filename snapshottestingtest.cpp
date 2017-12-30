@@ -1,6 +1,5 @@
 #include <QTest>
 #include <QException>
-#include "snapshottestingtest.h"
 #include "snapshottesting.h"
 
 SnapshotTesting::Test::Test()

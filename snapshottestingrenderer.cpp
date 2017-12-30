@@ -2,7 +2,6 @@
 #include <QQuickItem>
 #include <asyncfuture.h>
 #include <aconcurrent.h>
-#include "snapshottestingrenderer.h"
 #include "snapshottesting.h"
 #include "private/snapshottesting_p.h"
 
