@@ -84,32 +84,6 @@ bool SnapshotTesting::Renderer::load(const QString &source)
         return component.create();
     };
 
-    /*
-    auto _render = [=]() {
-        auto d = defer;
-
-        if (!context->makeCurrent(surface)) {
-            qDebug() << "Failed to render";
-            d.cancel();
-            return;
-        }
-
-        renderControl->polishItems();
-        renderControl->sync();
-        renderControl->render();
-
-        window->resetOpenGLState();
-
-        QOpenGLFramebufferObject::bindDefault();
-
-        context->functions()->glFlush();
-
-        m_screenshot = fbo->toImage();
-
-        d.complete();
-    };
-    */
-
     auto _init = [=](QObject* rootObject) {
         QQuickItem* rootItem = qobject_cast<QQuickItem *>(rootObject);
 
@@ -121,6 +95,8 @@ bool SnapshotTesting::Renderer::load(const QString &source)
 
             fbo = new QOpenGLFramebufferObject(window->size(), QOpenGLFramebufferObject::CombinedDepthStencil);
             window->setRenderTarget(fbo);
+
+            // This is a dummy render which is needed for some components (e.g ListView) to create their content.
             render();
             initialized.complete();
         });
@@ -164,14 +140,14 @@ bool SnapshotTesting::Renderer::load(const QString &source)
     return true;
 }
 
-QFuture<void> SnapshotTesting::Renderer::whenReady()
+QFuture<void> SnapshotTesting::Renderer::whenStill()
 {
     return SnapshotTesting::Private::whenReady(m_item);
 }
 
-void SnapshotTesting::Renderer::waitWhenReady(int timeout)
+void SnapshotTesting::Renderer::waitWhenStill(int timeout)
 {
-    QFuture<void> future = whenReady();
+    QFuture<void> future = whenStill();
     AConcurrent::await(future, timeout);
 }
 
@@ -219,6 +195,11 @@ QImage SnapshotTesting::Renderer::render()
     context->functions()->glFlush();
 
     return fbo->toImage();
+}
+
+QObject *SnapshotTesting::Renderer::item() const
+{
+    return m_item;
 }
 
 QPointer<QQmlEngine> SnapshotTesting::Renderer::engine() const

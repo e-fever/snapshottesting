@@ -650,7 +650,7 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
 
     QVERIFY(renderer.load(input));
 
-    renderer.waitWhenReady();
+    renderer.waitWhenStill(1000);
 
     QString snapshot = renderer.capture(options);
 

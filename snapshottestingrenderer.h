@@ -25,13 +25,16 @@ namespace SnapshotTesting {
 
         bool load(const QString& source);
 
-        QFuture<void> whenReady();
+        QFuture<void> whenStill();
 
-        void waitWhenReady(int timeout = -1);
+        void waitWhenStill(int timeout = -1);
 
         QString capture(SnapshotTesting::Options options = SnapshotTesting::Options());
 
         QFuture<QImage> grabScreenshot();
+
+        /// The loaded item
+        QObject *item() const;
 
     private:
         QImage render();
