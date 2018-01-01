@@ -34,6 +34,8 @@ private slots:
 
     void test_convertToPackageNotation();
 
+    void test_replaceLines();
+
     /* Public API */
 
     void test_SnapshotTesting_diff();

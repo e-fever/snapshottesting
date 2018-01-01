@@ -21,6 +21,9 @@ namespace SnapshotTesting {
     /// Load "snapshots" from the "snapshotsFile"
     QVariantMap loadStoredSnapshots();
 
+    /// Run QRegExp replace on everything line of the input
+    QString replaceLines(const QString& input, QRegExp regexp, QString replace);
+
     void saveSnapshots();
 
     void setSnapshotText(const QString& name , const QString& content);

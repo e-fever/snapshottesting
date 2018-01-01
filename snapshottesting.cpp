@@ -1717,4 +1717,14 @@ SnapshotTesting::Test SnapshotTesting::createTest()
     return test;
 }
 
+QString SnapshotTesting::replaceLines(const QString &input, QRegExp regexp, QString replace)
+{
+    QStringList token = input.split("\n");
+
+    for (int i = 0; i < token.size() ;i++) {
+        token[i] = token[i].replace(regexp, replace);
+    }
+    return token.join("\n");
+}
+
 Q_COREAPP_STARTUP_FUNCTION(init)

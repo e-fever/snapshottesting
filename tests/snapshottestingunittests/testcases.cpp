@@ -442,6 +442,14 @@ void Testcases::test_convertToPackageNotation()
 
 }
 
+void Testcases::test_replaceLines()
+{
+    QString input = "123\n456\n789";
+    QString expectedOutput = "123\n\n789";
+
+    QCOMPARE(SnapshotTesting::replaceLines(input, QRegExp(".*5.*"),""), expectedOutput);
+}
+
 void Testcases::test_SnapshotTesting_diff()
 {
     QString text1 = "A\nB\nC";
