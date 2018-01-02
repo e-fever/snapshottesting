@@ -1548,9 +1548,10 @@ QImage SnapshotTesting::Private::combineImages(const QImage &prev, const QImage 
     return canvas;
 }
 
+QList<QQmlContext*> SnapshotTesting::Private::listOwnedContext(QObject* object) {
+    QList<QQmlContext*> result;
 
-QQmlContext *SnapshotTesting::Private::obtainBaseContext(QObject *object)
-{
+
 
     QQmlContext* context = obtainCreationContext(object);
 
@@ -1614,14 +1615,26 @@ QQmlContext *SnapshotTesting::Private::obtainBaseContext(QObject *object)
         list << c;
         c = c->parentContext();
     }
-    QQmlContext* res = 0;
 
     while (list.size() > 0) {
         c = list.takeLast();
         if (isBaseContext(c, object)) {
-            res = c;
-            break;
+            result << c;
         }
+    }
+
+    return result;
+}
+
+
+QQmlContext *SnapshotTesting::Private::obtainBaseContext(QObject *object)
+{
+    QQmlContext* res = 0;
+
+    QList<QQmlContext*> list = listOwnedContext(object);
+
+    if (list.size() > 0) {
+        res = list.first();
     }
 
     return res;

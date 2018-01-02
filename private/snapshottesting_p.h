@@ -47,6 +47,8 @@ namespace SnapshotTesting {
 
         QQmlContext* obtainCreationContext(QObject* object);
 
+        QList<QQmlContext*> listOwnedContext(QObject* object);
+
         /// Obtain the context owned by the object.
         QQmlContext* obtainBaseContext(QObject* object);
 
