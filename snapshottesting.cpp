@@ -383,6 +383,7 @@ QString SnapshotTesting::Private::obtainComponentNameOfQtType(QObject *object)
     QList<QQmlContext*> list = listOwnedContext(object);
     QString res;
 
+
     while (list.size() > 0) {
         QQmlContext* context = list.takeFirst();
         QUrl url = context->baseUrl();
@@ -392,8 +393,22 @@ QString SnapshotTesting::Private::obtainComponentNameOfQtType(QObject *object)
     }
 
     if (res.isNull()) {
-        QString className = obtainClassName(object);
-        res = classNameToComponentName(className);
+
+        const QMetaObject* meta = object->metaObject();
+
+        while (meta) {
+
+            QString className = meta->className();
+
+            // A dirty hack.
+            if (className.indexOf("QQuick") == 0 ||
+                className == "QObject") {
+                res = classNameToComponentName(className);
+                break;
+            }
+
+            meta = meta->superClass();
+        }
     }
 
     return res;

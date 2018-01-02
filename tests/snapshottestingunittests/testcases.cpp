@@ -283,6 +283,7 @@ void Testcases::test_context()
 
         QCOMPARE(obtainComponentNameByClass(object), QString("Sample7"));
 
+        QCOMPARE(SnapshotTesting::Private::obtainComponentNameOfQtType(object), QString("Item"));
         QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Item"));
         QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object, true), QString("Item"));
 
