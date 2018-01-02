@@ -49,7 +49,7 @@ namespace SnapshotTesting {
 
         QList<QQmlContext*> listOwnedContext(QObject* object);
 
-        /// Obtain the context owned by the object.
+        /// Obtain the "last" context owned by the object.
         QQmlContext* obtainBaseContext(QObject* object);
 
         QString obtainComponentNameByBaseUrl(const QUrl& baseUrl);
@@ -66,6 +66,8 @@ namespace SnapshotTesting {
         QString obtainComponentNameByQuickClass(QObject* object);
 
         QString obtainComponentNameByCurrentScopeContext(QObject* object);
+
+        QString obtainComponentNameOfQtType(QObject* object);
 
         QString obtainRootComponentName(QObject* object, bool expandAll = false);
 

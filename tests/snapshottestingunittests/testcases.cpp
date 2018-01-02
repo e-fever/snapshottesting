@@ -123,6 +123,7 @@ void Testcases::test_context()
         QVERIFY(object);
         QCOMPARE(listContextUrls(object).size(), 2);
 
+        QCOMPARE(obtainComponentNameOfQtType(object), QString("Button"));
         qDebug() << "CustomButton" << listContextUrls(object);
 
         object->deleteLater();
@@ -147,6 +148,7 @@ void Testcases::test_context()
 
         QVERIFY(obtainCurrentScopeContext(object) == qmlContext(object));
         delete object;
+
     }
 
     {
@@ -301,6 +303,18 @@ void Testcases::test_context()
 
             QCOMPARE(componentNameByBaseContext(radioButton), QString("RadioButton"));
         }
+    }
+
+    {
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample/Sample_Layout.qml"));
+
+        QQmlComponent component(&engine,url);
+
+        QQuickItem *object = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(object);
+
+        QCOMPARE(obtainComponentNameOfQtType(object), QString("Grid"));
+
     }
 }
 

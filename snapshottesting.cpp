@@ -203,6 +203,26 @@ static void assign(QVariantMap &dest, const QObject *source)
     }
 }
 
+static bool inQtInternalContextUrls(const QUrl& url) {
+    return m_qtInternalContextUrls.indexOf(QtShell::dirname(url.toString())) >= 0;
+};
+
+static void printContextList(QList<QQmlContext*> list) {
+    for (int i = 0 ; i < list.size();i++) {
+        qDebug() << list[i]->baseUrl();
+    }
+}
+
+static QList<QQmlContext*> filterContextWithNullBaseUrl(QList<QQmlContext*> list) {
+    QList<QQmlContext*> res;
+    for (int i = 0 ; i < list.size();i++) {
+        if (list[i]->baseUrl().isEmpty())
+            continue;
+        res << list[i];
+    }
+    return res;
+}
+
 QByteArray SnapshotTesting::Private::toBase64(const QImage& image) {
 
     QBuffer buffer;
@@ -358,6 +378,27 @@ QString SnapshotTesting::Private::obtainComponentNameByCurrentScopeContext(QObje
     }
 }
 
+QString SnapshotTesting::Private::obtainComponentNameOfQtType(QObject *object)
+{
+    QList<QQmlContext*> list = listOwnedContext(object);
+    QString res;
+
+    while (list.size() > 0) {
+        QQmlContext* context = list.takeFirst();
+        QUrl url = context->baseUrl();
+        if (inQtInternalContextUrls(url)) {
+            res = obtainComponentNameByBaseUrl(url);
+        }
+    }
+
+    if (res.isNull()) {
+        QString className = obtainClassName(object);
+        res = classNameToComponentName(className);
+    }
+
+    return res;
+}
+
 QString SnapshotTesting::Private::obtainComponentNameByClass(QObject *object)
 {
     QString result;
@@ -484,10 +525,6 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
             }
         }
         return res;
-    };
-
-    auto inQtInternalContextUrls = [=](const QUrl& url) {
-        return m_qtInternalContextUrls.indexOf(QtShell::dirname(url.toString())) >= 0;
     };
 
     auto obtainBaseUrl = [](QObject* object) {
