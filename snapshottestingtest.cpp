@@ -27,7 +27,7 @@ void SnapshotTesting::Test::setSuffix(const QString &suffix)
     m_suffix = suffix;
 }
 
-QString SnapshotTesting::Test::capture(QObject *object, SnapshotTesting::Options options)
+QString SnapshotTesting::Test::capture(QObject *object, SnapshotTesting::CaptureOptions options)
 {
     return SnapshotTesting::capture(object, options);
 }

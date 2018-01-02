@@ -69,7 +69,8 @@ namespace SnapshotTesting {
 
         QString obtainComponentNameOfQtType(QObject* object);
 
-        QString obtainRootComponentName(QObject* object, bool expandAll = false);
+        /// Source component is the object passed to capture function
+        QString obtainSourceComponentName(QObject* object, bool expandAll = false);
 
         QStringList listContextUrls(QObject* object);
 

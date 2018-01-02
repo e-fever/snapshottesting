@@ -150,7 +150,7 @@ void SnapshotTesting::Renderer::waitWhenStill(int timeout)
     AConcurrent::await(future, timeout);
 }
 
-QString SnapshotTesting::Renderer::capture(SnapshotTesting::Options options)
+QString SnapshotTesting::Renderer::capture(SnapshotTesting::CaptureOptions options)
 {
     if (!m_item) {
         return QString();

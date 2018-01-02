@@ -207,11 +207,13 @@ static bool inQtInternalContextUrls(const QUrl& url) {
     return m_qtInternalContextUrls.indexOf(QtShell::dirname(url.toString())) >= 0;
 };
 
+/*
 static void printContextList(QList<QQmlContext*> list) {
     for (int i = 0 ; i < list.size();i++) {
         qDebug() << list[i]->baseUrl();
     }
 }
+*/
 
 static QList<QQmlContext*> filterContextWithNullBaseUrl(QList<QQmlContext*> list) {
     QList<QQmlContext*> res;
@@ -458,13 +460,28 @@ QString SnapshotTesting::Private::obtainComponentNameByQuickClass(QObject *objec
 }
 
 
-QString SnapshotTesting::Private::obtainRootComponentName(QObject *object, bool expandAll)
+QString SnapshotTesting::Private::obtainSourceComponentName(QObject *object, bool expandAll)
 {
     QString res;
     if (expandAll) {
         res = obtainComponentNameByQuickClass(object);
     } else {
-        res = SnapshotTesting::Private::obtainComponentNameByInheritedContext(object);
+        QList<QQmlContext*> list = listOwnedContext(object);
+        list = filterContextWithNullBaseUrl(list);
+        QQmlContext* context = 0;
+
+        if (list.size() >= 2) {
+            context = list[1];
+        }
+
+        if (context) {
+            res = obtainComponentNameByBaseUrl(context->baseUrl());
+        }
+
+        if (res.isNull()) {
+            res = obtainComponentNameOfQtType(object);
+        }
+
     }
 
     return res;
@@ -486,7 +503,7 @@ static bool inherited(QObject *object, QString className) {
     return res;
 }
 
-static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& options) {
+static QVariantMap dehydrate(QObject* source, const SnapshotTesting::CaptureOptions& options) {
     QString topLevelContextName;
     bool captureVisibleItemOnly = options.captureVisibleItemOnly;
     bool expandAll = options.expandAll;
@@ -557,7 +574,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
         QString name;
 
         if (object == source) {
-            header.name = SnapshotTesting::Private::obtainRootComponentName(object, options.expandAll);
+            header.name = SnapshotTesting::Private::obtainSourceComponentName(object, options.expandAll);
             QString contextName = obtainComponentNameByCurrentScopeContext(object);
             if (header.name != contextName) {
                 header.comment = contextName;
@@ -777,7 +794,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::Options& op
     return travel(source);
 }
 
-static QString prettyText(QVariantMap snapshot, SnapshotTesting::Options& options) {
+static QString prettyText(QVariantMap snapshot, SnapshotTesting::CaptureOptions& options) {
     QStringList priorityFields;
 
     priorityFields << "objectName" << "x" << "y" << "width" << "height";
@@ -1015,7 +1032,7 @@ bool SnapshotTesting::ignoreAllMismatched()
     return m_ignoreAllMismatched;
 }
 
-QString SnapshotTesting::capture(QObject *object, SnapshotTesting::Options options)
+QString SnapshotTesting::capture(QObject *object, SnapshotTesting::CaptureOptions options)
 {
     if (options.captureOnReady) {
         Private::waitUntilReady(object);

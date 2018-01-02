@@ -144,11 +144,17 @@ void Testcases::test_context()
 
         QCOMPARE(SnapshotTesting::Private::obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample1"));
 
-        QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Item"));
+        QCOMPARE(SnapshotTesting::Private::obtainSourceComponentName(object), QString("Item"));
 
         QVERIFY(obtainCurrentScopeContext(object) == qmlContext(object));
-        delete object;
 
+        {
+            QQuickItem* item = object->findChild<QQuickItem*>("Item10");
+            QVERIFY(item);
+
+            QCOMPARE(SnapshotTesting::Private::obtainSourceComponentName(item), QString("Column"));
+        }
+        delete object;
     }
 
     {
@@ -240,7 +246,7 @@ void Testcases::test_context()
         QCOMPARE(obtainComponentNameByBaseUrl(context->baseUrl()), QString("Sample5Form"));
 
         QVERIFY(obtainCurrentScopeContext(object) == qmlContext(object));
-        QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Sample5Form"));
+        QCOMPARE(SnapshotTesting::Private::obtainSourceComponentName(object), QString("Sample5Form"));
 
     }
 
@@ -255,7 +261,7 @@ void Testcases::test_context()
         QQuickItem* child = object->findChild<QQuickItem*>("item_sample1");
 
         QVERIFY(obtainCurrentScopeContext(child) != qmlContext(child));
-        QCOMPARE(obtainRootComponentName(object), QString("Item"));
+        QCOMPARE(obtainSourceComponentName(object), QString("Item"));
     }
 
     {
@@ -270,7 +276,7 @@ void Testcases::test_context()
 
         QCOMPARE(obtainComponentNameByBaseUrl(obtainCurrentScopeContext(object)->baseUrl()), QString("Sample6"));
 
-        QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Sample5"));
+        QCOMPARE(SnapshotTesting::Private::obtainSourceComponentName(object), QString("Sample5"));
     }
 
     {
@@ -284,8 +290,8 @@ void Testcases::test_context()
         QCOMPARE(obtainComponentNameByClass(object), QString("Sample7"));
 
         QCOMPARE(SnapshotTesting::Private::obtainComponentNameOfQtType(object), QString("Item"));
-        QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object), QString("Item"));
-        QCOMPARE(SnapshotTesting::Private::obtainRootComponentName(object, true), QString("Item"));
+        QCOMPARE(SnapshotTesting::Private::obtainSourceComponentName(object), QString("Item"));
+        QCOMPARE(SnapshotTesting::Private::obtainSourceComponentName(object, true), QString("Item"));
 
         delete object;
     }
@@ -400,7 +406,7 @@ void Testcases::test_ScreenshotBrowser()
 
     Automator::wait(100);
 
-    SnapshotTesting::Options options;
+    SnapshotTesting::CaptureOptions options;
     options.expandAll = true;
 
     {
@@ -540,7 +546,7 @@ void Testcases::test_SnapshotTesting_capture_RadioButton()
 
         QVERIFY(item);
 
-        SnapshotTesting::Options options;
+        SnapshotTesting::CaptureOptions options;
         options.expandAll = true;
         QString snapshot = SnapshotTesting::capture(item, options);
         qDebug() << snapshot;
@@ -559,7 +565,7 @@ void Testcases::test_SnapshotTesting_capture_RadioButton()
 
         qDebug() << item->metaObject()->superClass()->superClass()->className();
 
-        SnapshotTesting::Options options;
+        SnapshotTesting::CaptureOptions options;
         options.expandAll = true;
         QString snapshot = SnapshotTesting::capture(item, options);
         QVERIFY(SnapshotTesting::matchStoredSnapshot(function + "_Single", snapshot));
@@ -612,7 +618,7 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_expandAll()
     QQuickItem *childItem = qobject_cast<QQuickItem*>(component.create());
     QVERIFY(childItem);
 
-    SnapshotTesting::Options options;
+    SnapshotTesting::CaptureOptions options;
     options.expandAll = true;
     QString name = QString("%1_%2").arg(QTest::currentTestFunction()).arg(fileName);
 
@@ -642,7 +648,7 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_hideId()
     QQuickItem *childItem = qobject_cast<QQuickItem*>(component.create());
     QVERIFY(childItem);
 
-    SnapshotTesting::Options options;
+    SnapshotTesting::CaptureOptions options;
     options.hideId = true;
     QString name = QString("%1_%2").arg(QTest::currentTestFunction()).arg(fileName);
 
@@ -668,7 +674,7 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
     QQmlEngine engine;
     SnapshotTesting::Renderer renderer(&engine);
 
-    SnapshotTesting::Options options;
+    SnapshotTesting::CaptureOptions options;
     options.hideId = true;
 
     QVERIFY(renderer.load(input));

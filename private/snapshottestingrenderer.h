@@ -29,7 +29,7 @@ namespace SnapshotTesting {
 
         void waitWhenStill(int timeout = -1);
 
-        QString capture(SnapshotTesting::Options options = SnapshotTesting::Options());
+        QString capture(SnapshotTesting::CaptureOptions options = SnapshotTesting::CaptureOptions());
 
         QImage grabScreenshot();
 

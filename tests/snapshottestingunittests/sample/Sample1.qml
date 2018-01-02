@@ -60,4 +60,9 @@ Item {
     Canvas {
         id: item9
     }
+
+    Column {
+        id: item10
+        objectName: "Item10";
+    }
 }

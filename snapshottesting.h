@@ -38,7 +38,7 @@ namespace SnapshotTesting {
 
     QString diff(QString original, QString current);
 
-    QString capture(QObject* object, Options options = Options());
+    QString capture(QObject* object, CaptureOptions options = CaptureOptions());
 
     bool matchStoredSnapshot(const QString& name, const QString& snapshot);
 

@@ -21,7 +21,7 @@ namespace SnapshotTesting {
 
         void setSuffix(const QString &suffix);
 
-        QString capture(QObject* object, SnapshotTesting::Options options = SnapshotTesting::Options());
+        QString capture(QObject* object, SnapshotTesting::CaptureOptions options = SnapshotTesting::CaptureOptions());
 
         bool match(const QString& snapshot, const QImage screenshot = QImage());
 

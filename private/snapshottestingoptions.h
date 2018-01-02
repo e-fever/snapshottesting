@@ -5,10 +5,10 @@ namespace SnapshotTesting {
 
 
     /// Options for capture
-    class Options {
+    class CaptureOptions {
     public:
 
-        inline Options() {
+        inline CaptureOptions() {
             captureVisibleItemOnly = true;
             expandAll = false;
             hideId = false;
