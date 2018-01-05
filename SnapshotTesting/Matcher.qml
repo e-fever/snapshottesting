@@ -20,6 +20,8 @@ Dialog {
 
     property alias combinedScreenshot: content.combinedScreenshot
 
+    property alias tabIndex: content.tabIndex
+
     MatcherContentView {
         id: content
         implicitWidth: 640

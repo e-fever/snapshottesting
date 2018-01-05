@@ -16,6 +16,8 @@ Item {
     property string combinedScreenshot: ""
     property string monospaceFont: ""
 
+    property alias tabIndex: tabView.currentIndex
+
     TabView {
         id: tabView
         anchors.fill: parent

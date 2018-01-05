@@ -1053,6 +1053,8 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
 
     QString originalVersion = snapshots[name].toString();
 
+    static int tabIndex = 0;
+
     if (originalVersion == snapshot) {
         // Save the screenshot if absent
         if (!m_screenshotImagePath.isNull() && !screenshot.isNull()) {
@@ -1092,6 +1094,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
         dialog->setProperty("previousSnapshot", originalVersion);
         dialog->setProperty("snapshot", snapshot);
         dialog->setProperty("title", name);
+        dialog->setProperty("tabIndex", tabIndex);
 
         if (!screenshot.isNull()) {
             dialog->setProperty("screenshot", QString(toBase64(screenshot)));
@@ -1104,7 +1107,6 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
              previosScreenshotFile = QtShell::realpath_strip(m_screenshotImagePath, name + ".png");
             if (QFile::exists(previosScreenshotFile)) {
                 if (previousScreenshot.load(previosScreenshotFile)) {
-                    qDebug() << "set previous screenshot";
                     dialog->setProperty("previousScreenshot", toBase64(previousScreenshot));
                 }
             }
@@ -1117,6 +1119,8 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
 
         QMetaObject::invokeMethod(dialog, "open");
         QCoreApplication::exec();
+
+        tabIndex = dialog->property("tabIndex").toInt();
 
         int button = dialog->property("clickedButton").value<int>();
         switch (button) {
