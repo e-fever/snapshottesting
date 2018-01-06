@@ -660,6 +660,14 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::CaptureOpti
         DEHYDRATE_FONT(dest,property,original,current, wordSpacing);
     };
 
+    auto isQMetaObject = [](QJSValue value) {
+#if (QT_VERSION < QT_VERSION_CHECK(5,8,0))
+        return false;
+#else
+        return value.isQMetaObject();
+#endif
+    };
+
     auto _dehydrate = [=](QObject* object, QString componentName) {
         Q_UNUSED(componentName);
 
@@ -700,7 +708,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::CaptureOpti
                 continue;
             } else if (value.userType() == qMetaTypeId<QJSValue>()) {
                 QJSValue jsValue = value.value<QJSValue>();
-                if (jsValue.isQObject() || jsValue.isQMetaObject()) {
+                if (jsValue.isQObject() || isQMetaObject(jsValue)) {
                     continue;
                 }
                 value = jsValue.toVariant();
