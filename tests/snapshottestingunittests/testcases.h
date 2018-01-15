@@ -36,6 +36,9 @@ private slots:
 
     void test_replaceLines();
 
+    void test_qml_loading();
+    void test_qml_loading_data();
+
     /* Public API */
 
     void test_SnapshotTesting_diff();
@@ -66,6 +69,5 @@ private slots:
 private:
     void scanSamples();
 };
-
 
 #endif // SNAPSHOTTESTS_H

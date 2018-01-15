@@ -9,8 +9,6 @@ Dialog {
     title: "Snapshot Testing"
     modality: Qt.NonModal
 
-    property string monospaceFont: ""
-
     property alias diff: content.diff
     property alias previousSnapshot: content.originalVersion
     property alias snapshot: content.currentVersion

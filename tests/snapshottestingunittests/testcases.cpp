@@ -471,6 +471,40 @@ void Testcases::test_replaceLines()
     QCOMPARE(SnapshotTesting::replaceLines(input, QRegExp(".*5.*"),""), expectedOutput);
 }
 
+void Testcases::test_qml_loading()
+{
+    QFETCH(QString, input);
+
+    QQmlEngine engine;
+    engine.addImportPath("qrc:///");
+
+    QQmlComponent comp(&engine);
+    comp.loadUrl(QUrl(input));
+
+    if (comp.isError()) {
+        qDebug() << QString("%1 : Load Failed. Reason :  %2").arg(input).arg(comp.errorString());
+    }
+    QVERIFY(!comp.isError());
+}
+
+void Testcases::test_qml_loading_data()
+{
+    QTest::addColumn<QString>("input");
+    QStringList files;
+    files << QtShell::find(QtShell::realpath_strip(SRCDIR,"../../SnapshotTesting"), "*.qml");
+
+    foreach (QString file , files) {
+        QString content = QtShell::cat(file);
+        content = content.toLower();
+
+        if (content.indexOf("pragma singleton") != -1) {
+            continue;
+        }
+
+        QTest::newRow(QtShell::basename(file).toLocal8Bit().constData()) << file;
+    }
+}
+
 void Testcases::test_SnapshotTesting_diff()
 {
     QString text1 = "A\nB\nC";
