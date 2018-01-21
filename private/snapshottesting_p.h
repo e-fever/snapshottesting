@@ -111,6 +111,8 @@ namespace SnapshotTesting {
         QString converToPackageNotation(QUrl url);
 
         QStringList findIgnorePropertyList(QObject* object, QMap<QString, QStringList> classIgnorePropertyList, QMap<QString, QStringList>ignoreListForComponent = QMap<QString, QStringList>() );
+
+        bool isIgnoredProperty(QObject* object, const QString& property, const QStringList& rules);
     }
 }
 

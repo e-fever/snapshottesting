@@ -1756,7 +1756,6 @@ QStringList SnapshotTesting::Private::findIgnorePropertyList(QObject *object, QM
         meta = meta->superClass();
     }
 
-
     QStringList baseUrls = listContextUrls(object);
 
     while (baseUrls.size() > 0) {
@@ -1819,6 +1818,38 @@ QString SnapshotTesting::replaceLines(const QString &input, QRegExp regexp, QStr
         token[i] = token[i].replace(regexp, replace);
     }
     return token.join("\n");
+}
+
+
+
+bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString &property, const QStringList &rules)
+{
+    /// @TODO Improvement. Cache the classes information by user
+    QStringList classes;
+    const QMetaObject* meta = object->metaObject();
+
+    while (meta != 0) {
+        classes << meta->className();
+        meta = meta->superClass();
+    }
+
+    QRegularExpression classRule("(^[a-zA-Z0-9]*)::([a-zA-Z][a-zA-Z0-9]*$)");
+
+    foreach (auto rule, rules) {
+
+        QRegularExpressionMatch match;
+        match = classRule.match(rule);
+
+        if (match.hasMatch()) {
+            QString c = match.captured(1);
+            QString p = match.captured(2);
+            if (classes.indexOf(c) >= 0 && p == property) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

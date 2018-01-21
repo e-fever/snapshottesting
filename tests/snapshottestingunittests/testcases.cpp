@@ -505,6 +505,19 @@ void Testcases::test_qml_loading_data()
     }
 }
 
+void Testcases::test_isIgnoredProperty()
+{
+    QStringList rules;
+    rules << "QQuickItem::parent";
+
+    QQuickItem* item = new QQuickItem();
+
+    QCOMPARE(isIgnoredProperty(item, "parent", rules), true);
+    QCOMPARE(isIgnoredProperty(item, "width", rules), false);
+
+    delete item;
+}
+
 void Testcases::test_SnapshotTesting_diff()
 {
     QString text1 = "A\nB\nC";

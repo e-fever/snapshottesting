@@ -39,6 +39,8 @@ private slots:
     void test_qml_loading();
     void test_qml_loading_data();
 
+    void test_isIgnoredProperty();
+
     /* Public API */
 
     void test_SnapshotTesting_diff();
