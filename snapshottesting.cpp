@@ -1632,8 +1632,6 @@ QImage SnapshotTesting::Private::combineImages(const QImage &prev, const QImage 
 QList<QQmlContext*> SnapshotTesting::Private::listOwnedContext(QObject* object) {
     QList<QQmlContext*> result;
 
-
-
     QQmlContext* context = obtainCreationContext(object);
 
     auto inContext = [=](QQmlContext* context, QObject* object) {
@@ -1824,8 +1822,8 @@ QString SnapshotTesting::replaceLines(const QString &input, QRegExp regexp, QStr
 
 bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString &property, const QStringList &rules)
 {
-    /// @TODO Improvement. Cache the classes information by user
     QStringList classes;
+    QList<QPair<QString,QString>> qmlNamespace;
     const QMetaObject* meta = object->metaObject();
 
     while (meta != 0) {
@@ -1833,18 +1831,51 @@ bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString 
         meta = meta->superClass();
     }
 
+    QList<QUrl> baseUrls;
+    QList<QQmlContext*> contextList = listOwnedContext(object);
+    foreach (QQmlContext* context, contextList) {
+        QUrl baseUrl = context->baseUrl();
+        if (baseUrl.isEmpty())
+            continue;
+        baseUrls << baseUrl;
+    }
+
+    foreach (auto url, baseUrls) {
+        qmlNamespace << QPair<QString,QString>(obtainComponentNameByBaseUrl(url), converToPackageNotation(url));
+
+        qDebug() << qmlNamespace.last();
+    }
+
     QRegularExpression classRule("(^[a-zA-Z0-9]*)::([a-zA-Z][a-zA-Z0-9]*$)");
 
-    foreach (auto rule, rules) {
+    QRegularExpression packageRule("(^[a-zA-Z0-9]*)@([a-zA-Z0-9]*)::([a-zA-Z][a-zA-Z0-9]*$)");
 
+    foreach (auto rule, rules) {
         QRegularExpressionMatch match;
         match = classRule.match(rule);
 
         if (match.hasMatch()) {
-            QString c = match.captured(1);
-            QString p = match.captured(2);
-            if (classes.indexOf(c) >= 0 && p == property) {
+            QString cls = match.captured(1);
+            QString prop = match.captured(2);
+            if (classes.indexOf(cls) >= 0 && prop == property) {
                 return true;
+            }
+        }
+
+        match = packageRule.match(rule);
+
+        if (match.hasMatch()) {
+            QString comp = match.captured(1);
+            QString pkg = match.captured(2);
+            QString prop = match.captured(3);
+
+            foreach (auto ns, qmlNamespace) {
+                if (comp != ns.first) {
+                    continue;
+                }
+                if (ns.second.endsWith(pkg) && prop == property) {
+                    return true;
+                }
             }
         }
     }

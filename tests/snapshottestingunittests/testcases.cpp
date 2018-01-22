@@ -508,12 +508,31 @@ void Testcases::test_qml_loading_data()
 void Testcases::test_isIgnoredProperty()
 {
     QStringList rules;
-    rules << "QQuickItem::parent";
+    rules << "QQuickItem::parent"
+          << "Sample9@sample::containsMouse";
+
+    // @TODO ignore ignore in QtQuick package
 
     QQuickItem* item = new QQuickItem();
 
     QCOMPARE(isIgnoredProperty(item, "parent", rules), true);
     QCOMPARE(isIgnoredProperty(item, "width", rules), false);
+
+    QQmlApplicationEngine engine;
+
+    QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample", "Sample9.qml"));
+
+    qDebug() << url;
+    QQmlComponent component(&engine, url);
+
+    item = qobject_cast<QQuickItem*>(component.create());
+
+    QVERIFY(item);
+
+    QCOMPARE(isIgnoredProperty(item, "parent", rules), true);
+    QCOMPARE(isIgnoredProperty(item, "width", rules), false);
+    QCOMPARE(isIgnoredProperty(item, "containsMouse", rules), true);
+
 
     delete item;
 }
