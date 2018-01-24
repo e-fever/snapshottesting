@@ -509,32 +509,39 @@ void Testcases::test_isIgnoredProperty()
 {
     QStringList rules;
     rules << "QQuickItem::parent"
-          << "Sample9@sample::containsMouse";
+          << "Sample9@sample::containsMouse"
+          << "#TestItem::width";
 
-    // @TODO ignore ignore in QtQuick package
+    // @TODO support ignore in QtQuick package
 
     QQuickItem* item = new QQuickItem();
 
     QCOMPARE(isIgnoredProperty(item, "parent", rules), true);
     QCOMPARE(isIgnoredProperty(item, "width", rules), false);
+    delete item;
 
     QQmlApplicationEngine engine;
 
     QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample", "Sample9.qml"));
 
-    qDebug() << url;
     QQmlComponent component(&engine, url);
 
-    item = qobject_cast<QQuickItem*>(component.create());
+    QQuickItem* sample9 = qobject_cast<QQuickItem*>(component.create());
 
     QVERIFY(item);
 
-    QCOMPARE(isIgnoredProperty(item, "parent", rules), true);
-    QCOMPARE(isIgnoredProperty(item, "width", rules), false);
-    QCOMPARE(isIgnoredProperty(item, "containsMouse", rules), true);
+    QCOMPARE(isIgnoredProperty(sample9, "parent", rules), true);
+    QCOMPARE(isIgnoredProperty(sample9, "width", rules), false);
+    QCOMPARE(isIgnoredProperty(sample9, "containsMouse", rules), true);
 
+    // Validate "#TestItem::width"
 
-    delete item;
+    sample9->setObjectName("TestItem");
+    QCOMPARE(isIgnoredProperty(sample9, "parent", rules), true);
+    QCOMPARE(isIgnoredProperty(sample9, "width", rules), true);
+    QCOMPARE(isIgnoredProperty(sample9, "containsMouse", rules), true);
+
+    delete sample9;
 }
 
 void Testcases::test_SnapshotTesting_diff()

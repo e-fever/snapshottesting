@@ -1842,13 +1842,12 @@ bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString 
 
     foreach (auto url, baseUrls) {
         qmlNamespace << QPair<QString,QString>(obtainComponentNameByBaseUrl(url), converToPackageNotation(url));
-
-        qDebug() << qmlNamespace.last();
     }
 
     QRegularExpression classRule("(^[a-zA-Z0-9]*)::([a-zA-Z][a-zA-Z0-9]*$)");
 
     QRegularExpression packageRule("(^[a-zA-Z0-9]*)@([a-zA-Z0-9]*)::([a-zA-Z][a-zA-Z0-9]*$)");
+    QRegularExpression objectNameRule("^#([a-zA-Z0-9 ]*)::([a-zA-Z][a-zA-Z0-9]*$)");
 
     foreach (auto rule, rules) {
         QRegularExpressionMatch match;
@@ -1860,6 +1859,7 @@ bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString 
             if (classes.indexOf(cls) >= 0 && prop == property) {
                 return true;
             }
+            continue;
         }
 
         match = packageRule.match(rule);
@@ -1877,6 +1877,17 @@ bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString 
                     return true;
                 }
             }
+            continue;
+        }
+
+        match = objectNameRule.match(rule);
+        if (match.hasMatch()) {
+            QString objectName = match.captured(1);
+            QString prop = match.captured(2);
+            if (object->objectName() == objectName && prop == property) {
+                return true;
+            }
+            continue;
         }
     }
 
