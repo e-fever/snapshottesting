@@ -1822,9 +1822,17 @@ QString SnapshotTesting::replaceLines(const QString &input, QRegExp regexp, QStr
 
 bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString &property, const QStringList &rules)
 {
+    QMap<QString,bool> properties = findIgnorePropertyList(object, rules);
+    return properties.contains(property);
+}
+
+
+QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *object, const QStringList &rules)
+{
     QStringList classes;
     QList<QPair<QString,QString>> qmlNamespace;
     const QMetaObject* meta = object->metaObject();
+    QMap<QString,bool> res;
 
     while (meta != 0) {
         classes << meta->className();
@@ -1856,8 +1864,8 @@ bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString 
         if (match.hasMatch()) {
             QString cls = match.captured(1);
             QString prop = match.captured(2);
-            if (classes.indexOf(cls) >= 0 && prop == property) {
-                return true;
+            if (classes.indexOf(cls) >= 0) {
+                res[prop] = true;
             }
             continue;
         }
@@ -1873,8 +1881,9 @@ bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString 
                 if (comp != ns.first) {
                     continue;
                 }
-                if (ns.second.endsWith(pkg) && prop == property) {
-                    return true;
+                if (ns.second.endsWith(pkg)) {
+                    res[prop] = true;
+                    break;
                 }
             }
             continue;
@@ -1884,14 +1893,14 @@ bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString 
         if (match.hasMatch()) {
             QString objectName = match.captured(1);
             QString prop = match.captured(2);
-            if (object->objectName() == objectName && prop == property) {
-                return true;
+            if (object->objectName() == objectName) {
+                res[prop] = true;
             }
             continue;
         }
     }
 
-    return false;
+    return res;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)
