@@ -84,6 +84,8 @@ static QList<int> forbiddenDataTypeList;
 
 std::function<QImage(const QImage&, const QImage&)> m_screenshotImageCombinator;
 
+static QMap<QString, QString> classNameToPackageName;
+
 #define DEHYDRATE_FONT(dest, property, original, current, field) \
     if (original.field() != current.field()) { \
         dest[property + "." + #field] = current.field(); \
@@ -1173,6 +1175,9 @@ static void init() {
     knownComponentList = map.keys();
     for (int i = 0 ; i < knownComponentList.size() ; i++) {
         QString key = knownComponentList[i];
+        if (key == "packages") {
+            continue;
+        }
         QVariantMap record =  map[key].toMap();
 
         if (!key.contains("@")) {
@@ -1188,6 +1193,23 @@ static void init() {
                       << qMetaTypeId<QQmlListProperty<QObject>>()
                       << qMetaTypeId<QByteArray>()
                       << qMetaTypeId<void*>();
+
+        {
+            /// Hard coded package information
+            QVariantMap packages = map["packages"].toMap();
+            auto keys = packages.keys();
+
+            foreach (auto key, keys) {
+                QVariantList list = packages[key].toList();
+
+                foreach (auto className , list) {
+                    classNameToPackageName[className.toString()] = key;
+                }
+            }
+        }
+
+
+
     }
 
     /* Dynamic Configuration */
@@ -1830,13 +1852,21 @@ bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString 
 QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *object, const QStringList &rules)
 {
     QStringList classes;
+    QMap<QString, bool> packages;
+
     QList<QPair<QString,QString>> qmlNamespace;
     const QMetaObject* meta = object->metaObject();
     QMap<QString,bool> res;
 
+
     while (meta != 0) {
-        classes << meta->className();
+        QString className = meta->className();
+        classes << className;
         meta = meta->superClass();
+
+        if (classNameToPackageName.contains(className)) {
+            packages[classNameToPackageName[className]] = true;
+        }
     }
 
     QList<QUrl> baseUrls;
@@ -1886,6 +1916,13 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
                     break;
                 }
             }
+
+            // Match hard coded package
+
+            if (packages.contains(pkg)) {
+                res[prop] = true;
+            }
+
             continue;
         }
 
@@ -1898,6 +1935,8 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
             }
             continue;
         }
+
+
     }
 
     return res;

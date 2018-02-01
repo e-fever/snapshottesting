@@ -146,5 +146,8 @@
             "implicitWidth",
             "baselineOffset"
         ]
+    },
+    "packages": {
+        "QtQuick": ["QQuickMouseArea"]
     }
 }

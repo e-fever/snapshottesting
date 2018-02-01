@@ -510,6 +510,7 @@ void Testcases::test_isIgnoredProperty()
     QStringList rules;
     rules << "QQuickItem::parent"
           << "Sample9@sample::containsMouse"
+          << "MouseArea@QtQuick::height"
           << "#TestItem::width";
 
     // @TODO support ignore in QtQuick package
@@ -518,6 +519,8 @@ void Testcases::test_isIgnoredProperty()
 
     QCOMPARE(isIgnoredProperty(item, "parent", rules), true);
     QCOMPARE(isIgnoredProperty(item, "width", rules), false);
+    QCOMPARE(isIgnoredProperty(item, "height", rules), false);
+
     delete item;
 
     QQmlApplicationEngine engine;
@@ -533,6 +536,7 @@ void Testcases::test_isIgnoredProperty()
     QCOMPARE(isIgnoredProperty(sample9, "parent", rules), true);
     QCOMPARE(isIgnoredProperty(sample9, "width", rules), false);
     QCOMPARE(isIgnoredProperty(sample9, "containsMouse", rules), true);
+    QCOMPARE(isIgnoredProperty(sample9, "height", rules), true);
 
     // Validate "#TestItem::width"
 
