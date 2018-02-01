@@ -148,6 +148,18 @@
         ]
     },
     "packages": {
-        "QtQuick": ["QQuickMouseArea"]
-    }
+        "QtQuick": ["QQuickMouseArea", "QQuickImage"]
+    },
+    "rules": [
+        "Item@QtQuick::childrenRect",
+        "Text@QtQuick::paintedHeight",
+        "Text@QtQuick::paintedWidth",
+        "Text@QtQuick::baselineOffset",
+        "Image@QtQuick::paintedHeight",
+        "Image@QtQuick::paintedWidth",
+        "Image@QtQuick::status",
+        "RadioButton@QtQuick.Controls::implicitHeight",
+        "RadioButton@QtQuick.Controls::implicitWidth",
+        "RadioButton@QtQuick.Controls::baselineOffset"
+    ]
 }

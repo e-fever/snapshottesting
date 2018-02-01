@@ -86,6 +86,9 @@ std::function<QImage(const QImage&, const QImage&)> m_screenshotImageCombinator;
 
 static QMap<QString, QString> classNameToPackageName;
 
+/// Predefined ignore rules
+static QStringList systemIgnoreRules;
+
 #define DEHYDRATE_FONT(dest, property, original, current, field) \
     if (original.field() != current.field()) { \
         dest[property + "." + #field] = current.field(); \
@@ -643,6 +646,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::CaptureOpti
 
     auto obtainIgnoreList = [=](QObject* object) {
         return findIgnorePropertyList(object, classIgnoredProperties, componentIgnoredProperties);
+//        return findIgnorePropertyList(object, systemIgnoreRules).keys();
     };
 
     auto _dehydrateFont = [=](QVariantMap& dest, QString property, QFont original , QFont current) {
@@ -675,7 +679,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::CaptureOpti
 
         QVariantMap dest;
         QVariantMap defaultValues = obtainDefaultValuesMap(object);
-        QStringList ignoreList = obtainIgnoreList(object);
+        QStringList ignoreList = obtainIgnoreList(object); //@TODO - Change to QMap type
 
         const QMetaObject* meta = object->metaObject();
 
@@ -1206,10 +1210,13 @@ static void init() {
                     classNameToPackageName[className.toString()] = key;
                 }
             }
+
+            QVariantList rules = map["rules"].toList();
+
+            foreach (auto v, rules) {
+                systemIgnoreRules << v.toString();
+            }
         }
-
-
-
     }
 
     /* Dynamic Configuration */
