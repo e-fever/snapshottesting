@@ -84,7 +84,9 @@ static QList<int> forbiddenDataTypeList;
 
 std::function<QImage(const QImage&, const QImage&)> m_screenshotImageCombinator;
 
-static QMap<QString, QString> classNameToPackageName;
+typedef QPair<QString,QString> PackageInfo;
+
+static QMap<QString, PackageInfo> classNameToPackageInfo;
 
 /// Predefined ignore rules
 static QStringList systemIgnoreRules;
@@ -1206,8 +1208,11 @@ static void init() {
             foreach (auto key, keys) {
                 QVariantList list = packages[key].toList();
 
-                foreach (auto className , list) {
-                    classNameToPackageName[className.toString()] = key;
+                foreach (auto item , list) {
+                    QVariantList subList = item.toList();
+                    QString className = subList[0].toString();
+                    QString componentName = subList[1].toString();
+                    classNameToPackageInfo[className] = PackageInfo(componentName, key);
                 }
             }
 
@@ -1859,20 +1864,22 @@ bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString 
 QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *object, const QStringList &rules)
 {
     QStringList classes;
-    QMap<QString, bool> packages;
+    QMap<QString, QStringList> packages;
 
     QList<QPair<QString,QString>> qmlNamespace;
     const QMetaObject* meta = object->metaObject();
     QMap<QString,bool> res;
-
 
     while (meta != 0) {
         QString className = meta->className();
         classes << className;
         meta = meta->superClass();
 
-        if (classNameToPackageName.contains(className)) {
-            packages[classNameToPackageName[className]] = true;
+        if (classNameToPackageInfo.contains(className)) {
+            auto info = classNameToPackageInfo[className];
+            QStringList list = packages[info.second];
+            list << info.first;
+            packages[info.second] = list;
         }
     }
 
@@ -1885,13 +1892,16 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
         baseUrls << baseUrl;
     }
 
+
     foreach (auto url, baseUrls) {
         qmlNamespace << QPair<QString,QString>(obtainComponentNameByBaseUrl(url), converToPackageNotation(url));
     }
 
+
+
     QRegularExpression classRule("(^[a-zA-Z0-9]*)::([a-zA-Z][a-zA-Z0-9]*$)");
 
-    QRegularExpression packageRule("(^[a-zA-Z0-9]*)@([a-zA-Z0-9]*)::([a-zA-Z][a-zA-Z0-9]*$)");
+    QRegularExpression packageRule("(^[a-zA-Z0-9]*)@([a-zA-Z0-9\\.]*)::([a-zA-Z][a-zA-Z0-9]*$)");
     QRegularExpression objectNameRule("^#([a-zA-Z0-9 ]*)::([a-zA-Z][a-zA-Z0-9]*$)");
 
     foreach (auto rule, rules) {
@@ -1925,8 +1935,7 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
             }
 
             // Match hard coded package
-
-            if (packages.contains(pkg)) {
+            if (packages.contains(pkg) && packages[pkg].indexOf(comp) >= 0) {
                 res[prop] = true;
             }
 

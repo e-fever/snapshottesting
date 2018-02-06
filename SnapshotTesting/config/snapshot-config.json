@@ -148,7 +148,11 @@
         ]
     },
     "packages": {
-        "QtQuick": ["QQuickMouseArea", "QQuickImage"]
+        "QtQuick": [
+            ["QQuickMouseArea", "MouseArea"],
+            ["QQuickImage", "Image"],
+            ["QQuickItem", "Item"]
+        ]
     },
     "rules": [
         "Item@QtQuick::childrenRect",

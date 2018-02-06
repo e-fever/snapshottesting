@@ -309,6 +309,10 @@ void Testcases::test_context()
             QVERIFY(radioButton);
 
             QCOMPARE(componentNameByBaseContext(radioButton), QString("RadioButton"));
+            QStringList rules;
+            rules << "RadioButton@QtQuick.Controls::implicitHeight";
+            auto properties = findIgnorePropertyList(radioButton, rules);
+            QCOMPARE(properties.size(), 1);
         }
     }
 

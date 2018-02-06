@@ -15,6 +15,8 @@
 
 namespace SnapshotTesting {
 
+    /// A off-screen component renderer
+
     class Renderer {
 
     public:
