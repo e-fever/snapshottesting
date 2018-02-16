@@ -511,45 +511,77 @@ void Testcases::test_qml_loading_data()
 
 void Testcases::test_isIgnoredProperty()
 {
-    QStringList rules;
-    rules << "QQuickItem::parent"
-          << "Sample9@sample::containsMouse"
-          << "MouseArea@QtQuick::height"
-          << "#TestItem::width";
+    {
+        QStringList rules;
+        rules << "QQuickItem::parent";
 
-    // @TODO support ignore in QtQuick package
+        // Test ignore class
+        QQuickItem* item = new QQuickItem();
 
-    QQuickItem* item = new QQuickItem();
+        QCOMPARE(isIgnoredProperty(item, "parent", rules), true);
+        QCOMPARE(isIgnoredProperty(item, "width", rules), false);
+        QCOMPARE(isIgnoredProperty(item, "height", rules), false);
 
-    QCOMPARE(isIgnoredProperty(item, "parent", rules), true);
-    QCOMPARE(isIgnoredProperty(item, "width", rules), false);
-    QCOMPARE(isIgnoredProperty(item, "height", rules), false);
+        delete item;
+    }
 
-    delete item;
+    {
+        QStringList rules;
+        rules << "QQuickItem::parent"
+              << "Sample9@sample::containsMouse"
+              << "MouseArea@QtQuick::height"
+              << "#TestItem::width";
 
-    QQmlApplicationEngine engine;
+        QQmlApplicationEngine engine;
 
-    QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample", "Sample9.qml"));
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample", "Sample9.qml"));
 
-    QQmlComponent component(&engine, url);
+        QQmlComponent component(&engine, url);
 
-    QQuickItem* sample9 = qobject_cast<QQuickItem*>(component.create());
+        QQuickItem* sample9 = qobject_cast<QQuickItem*>(component.create());
 
-    QVERIFY(item);
+        // Validate
 
-    QCOMPARE(isIgnoredProperty(sample9, "parent", rules), true);
-    QCOMPARE(isIgnoredProperty(sample9, "width", rules), false);
-    QCOMPARE(isIgnoredProperty(sample9, "containsMouse", rules), true);
-    QCOMPARE(isIgnoredProperty(sample9, "height", rules), true);
+        QCOMPARE(isIgnoredProperty(sample9, "parent", rules), true);
+        QCOMPARE(isIgnoredProperty(sample9, "width", rules), false);
+        QCOMPARE(isIgnoredProperty(sample9, "containsMouse", rules), true);
+        QCOMPARE(isIgnoredProperty(sample9, "height", rules), true);
 
-    // Validate "#TestItem::width"
+        // Validate "#TestItem::width"
 
-    sample9->setObjectName("TestItem");
-    QCOMPARE(isIgnoredProperty(sample9, "parent", rules), true);
-    QCOMPARE(isIgnoredProperty(sample9, "width", rules), true);
-    QCOMPARE(isIgnoredProperty(sample9, "containsMouse", rules), true);
+        sample9->setObjectName("TestItem");
+        QCOMPARE(isIgnoredProperty(sample9, "parent", rules), true);
+        QCOMPARE(isIgnoredProperty(sample9, "width", rules), true);
+        QCOMPARE(isIgnoredProperty(sample9, "containsMouse", rules), true);
 
-    delete sample9;
+        delete sample9;
+    }
+
+    {
+        QStringList rules;
+        rules << "Text@QtQuick::baseUrl";
+
+        QQmlApplicationEngine engine;
+
+        QUrl url = QUrl::fromLocalFile(QtShell::realpath_strip(SRCDIR, "sample", "Sample1.qml"));
+
+        QQmlComponent component(&engine, url);
+
+        QQuickItem* sample1 = qobject_cast<QQuickItem*>(component.create());
+        QVERIFY(sample1);
+        auto items = sample1->childItems();
+        QQuickItem* text = 0;
+
+        for (auto item: items) {
+            if (QString(item->metaObject()->className()) == "QQuickText") {
+                text = item;
+                break;
+            }
+        }
+
+        QVERIFY(text);
+        QCOMPARE(isIgnoredProperty(text, "baseUrl", rules), true);
+    }
 }
 
 void Testcases::test_SnapshotTesting_diff()

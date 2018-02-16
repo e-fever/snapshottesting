@@ -89,7 +89,12 @@ typedef QPair<QString,QString> PackageInfo;
 static QMap<QString, PackageInfo> classNameToPackageInfo;
 
 /// Predefined ignore rules
+/// Examples
+/// Classname::Property
+/// ComponentName@Package::Property
+/// #ObjectName::Property
 static QStringList systemIgnoreRules;
+
 
 #define DEHYDRATE_FONT(dest, property, original, current, field) \
     if (original.field() != current.field()) { \
@@ -647,8 +652,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::CaptureOpti
     };
 
     auto obtainIgnoreList = [=](QObject* object) {
-        return findIgnorePropertyList(object, classIgnoredProperties, componentIgnoredProperties);
-//        return findIgnorePropertyList(object, systemIgnoreRules).keys();
+        return findIgnorePropertyList(object, systemIgnoreRules).keys();
     };
 
     auto _dehydrateFont = [=](QVariantMap& dest, QString property, QFont original , QFont current) {
@@ -1507,6 +1511,14 @@ void SnapshotTesting::addClassIgnoredProperty(const QString &className, const QS
         list.append(property);
     }
     classIgnoredProperties[className] = list;
+
+
+    QString rule = QString("%1::%2").arg(className).arg(property);
+
+    if (systemIgnoreRules.indexOf(rule) < 0) {
+        systemIgnoreRules << rule;
+    }
+
 }
 
 void SnapshotTesting::removeClassIgnoredProperty(const QString &className, const QString &property)
@@ -1514,6 +1526,14 @@ void SnapshotTesting::removeClassIgnoredProperty(const QString &className, const
     QStringList list = classIgnoredProperties[className];
     list.removeAll(property);
     classIgnoredProperties[className] = list;
+
+    QString rule = QString("%1::%2").arg(className).arg(property);
+
+    int index = systemIgnoreRules.indexOf(rule);
+    if (index >= 0) {
+        systemIgnoreRules.removeAt(index);
+    }
+
 }
 
 QString SnapshotTesting::Private::obtainQmlPackage(QObject *object)
@@ -1822,6 +1842,13 @@ void SnapshotTesting::addComponentIgnoreProperty(const QString &componentName, c
         list.append(property);
     }
     componentIgnoredProperties[key] = list;
+
+    // System Rules
+
+    QString rule = QString("%1@%2::%3").arg(componentName).arg(package).arg(property);
+    if (systemIgnoreRules.indexOf(rule) < 0) {
+        systemIgnoreRules << rule;
+    }
 }
 
 
@@ -1832,6 +1859,14 @@ void SnapshotTesting::removeComponentIgnoreProperty(const QString &componentName
     QStringList list = componentIgnoredProperties[key];
     list.removeAll(property);
     componentIgnoredProperties[key] = list;
+
+    // System Rules
+    QString rule = QString("%1@%2::%3").arg(componentName).arg(package).arg(property);
+
+    int index = systemIgnoreRules.indexOf(rule);
+    if (index >= 0) {
+        systemIgnoreRules.removeAt(index);
+    }
 }
 
 
@@ -1891,7 +1926,6 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
             continue;
         baseUrls << baseUrl;
     }
-
 
     foreach (auto url, baseUrls) {
         qmlNamespace << QPair<QString,QString>(obtainComponentNameByBaseUrl(url), converToPackageNotation(url));
