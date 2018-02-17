@@ -73,12 +73,6 @@ static QMap<QString,QString> classNameToComponentNameTable;
 /// The default values of components
 static QMap<QString, QVariantMap> classDefaultValues;
 
-/// A list of ignored properties according to the class of the component
-static QMap<QString, QStringList> classIgnoredProperties;
-
-/// A list of ignored properties according to the package and component name
-static QMap<QString, QStringList> componentIgnoredProperties;
-
 /// List of data type should not be processed in term of their meta type id
 static QList<int> forbiddenDataTypeList;
 
@@ -1193,9 +1187,6 @@ static void init() {
         if (!key.contains("@")) {
             classNameToComponentNameTable[key] = record["name"].toString();
             classDefaultValues[key] = record["defaultValues"].toMap();
-            classIgnoredProperties[key] = record["ignoreProperties"].toStringList();
-        } else {
-            componentIgnoredProperties[key] = record["ignoreProperties"].toStringList();
         }
     }
 
@@ -1506,13 +1497,6 @@ void SnapshotTesting::Private::walk(QObject *object, std::function<bool (QObject
 
 void SnapshotTesting::addClassIgnoredProperty(const QString &className, const QString &property)
 {
-    QStringList list = classIgnoredProperties[className];
-    if (list.indexOf(property) < 0) {
-        list.append(property);
-    }
-    classIgnoredProperties[className] = list;
-
-
     QString rule = QString("%1::%2").arg(className).arg(property);
 
     if (systemIgnoreRules.indexOf(rule) < 0) {
@@ -1523,10 +1507,6 @@ void SnapshotTesting::addClassIgnoredProperty(const QString &className, const QS
 
 void SnapshotTesting::removeClassIgnoredProperty(const QString &className, const QString &property)
 {
-    QStringList list = classIgnoredProperties[className];
-    list.removeAll(property);
-    classIgnoredProperties[className] = list;
-
     QString rule = QString("%1::%2").arg(className).arg(property);
 
     int index = systemIgnoreRules.indexOf(rule);
@@ -1835,16 +1815,8 @@ QStringList SnapshotTesting::Private::findIgnorePropertyList(QObject *object, QM
 
 void SnapshotTesting::addComponentIgnoreProperty(const QString &componentName, const QString &package, const QString &property)
 {
-    QString key = componentName + "@" + package;
-
-    QStringList list = componentIgnoredProperties[key];
-    if (list.indexOf(property) < 0) {
-        list.append(property);
-    }
-    componentIgnoredProperties[key] = list;
 
     // System Rules
-
     QString rule = QString("%1@%2::%3").arg(componentName).arg(package).arg(property);
     if (systemIgnoreRules.indexOf(rule) < 0) {
         systemIgnoreRules << rule;
@@ -1854,12 +1826,6 @@ void SnapshotTesting::addComponentIgnoreProperty(const QString &componentName, c
 
 void SnapshotTesting::removeComponentIgnoreProperty(const QString &componentName, const QString &package, const QString &property)
 {
-    QString key = componentName + "@" + package;
-
-    QStringList list = componentIgnoredProperties[key];
-    list.removeAll(property);
-    componentIgnoredProperties[key] = list;
-
     // System Rules
     QString rule = QString("%1@%2::%3").arg(componentName).arg(package).arg(property);
 
