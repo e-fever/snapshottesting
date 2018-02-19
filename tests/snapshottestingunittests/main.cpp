@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
     SnapshotTesting::setSnapshotsFile(QtShell::realpath_strip(SRCDIR, "snapshots.json"));
     SnapshotTesting::setScreenshotImagePath(QtShell::realpath_strip(QtShell::pwd(), "screenshot"));
 
-    SnapshotTesting::addComponentIgnoreProperty("RadioButton", "QtQuick.Controls", "width");
-    SnapshotTesting::addComponentIgnoreProperty("RadioButton", "QtQuick.Controls", "height");
+    SnapshotTesting::addSystemIgnoreRule("RadioButton@QtQuick.Controls::width");
+    SnapshotTesting::addSystemIgnoreRule("RadioButton@QtQuick.Controls::height");
 
     TestRunner runner;
     runner.addImportPath("qrc:///");

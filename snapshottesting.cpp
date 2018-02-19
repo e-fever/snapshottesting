@@ -1495,26 +1495,6 @@ void SnapshotTesting::Private::walk(QObject *object, std::function<bool (QObject
     _walk(object, 0);
 }
 
-void SnapshotTesting::addClassIgnoredProperty(const QString &className, const QString &property)
-{
-    QString rule = QString("%1::%2").arg(className).arg(property);
-
-    if (systemIgnoreRules.indexOf(rule) < 0) {
-        systemIgnoreRules << rule;
-    }
-
-}
-
-void SnapshotTesting::removeClassIgnoredProperty(const QString &className, const QString &property)
-{
-    QString rule = QString("%1::%2").arg(className).arg(property);
-
-    int index = systemIgnoreRules.indexOf(rule);
-    if (index >= 0) {
-        systemIgnoreRules.removeAt(index);
-    }
-
-}
 
 QString SnapshotTesting::Private::obtainQmlPackage(QObject *object)
 {
@@ -1813,29 +1793,6 @@ QStringList SnapshotTesting::Private::findIgnorePropertyList(QObject *object, QM
     return result;
 }
 
-void SnapshotTesting::addComponentIgnoreProperty(const QString &componentName, const QString &package, const QString &property)
-{
-
-    // System Rules
-    QString rule = QString("%1@%2::%3").arg(componentName).arg(package).arg(property);
-    if (systemIgnoreRules.indexOf(rule) < 0) {
-        systemIgnoreRules << rule;
-    }
-}
-
-
-void SnapshotTesting::removeComponentIgnoreProperty(const QString &componentName, const QString &package, const QString &property)
-{
-    // System Rules
-    QString rule = QString("%1@%2::%3").arg(componentName).arg(package).arg(property);
-
-    int index = systemIgnoreRules.indexOf(rule);
-    if (index >= 0) {
-        systemIgnoreRules.removeAt(index);
-    }
-}
-
-
 SnapshotTesting::Test SnapshotTesting::createTest()
 {
     SnapshotTesting::Test test;
@@ -1956,6 +1913,24 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
     }
 
     return res;
+}
+
+void SnapshotTesting::addSystemIgnoreRule(const QString &rule)
+{
+    int index = systemIgnoreRules.indexOf(rule);
+
+    if (index < 0) {
+        systemIgnoreRules.append(rule);
+    }
+}
+
+void SnapshotTesting::removeSystemIgnoreRule(const QString &rule)
+{
+    int index = systemIgnoreRules.indexOf(rule);
+
+    if (index >= 0) {
+        systemIgnoreRules.removeAt(index);
+    }
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

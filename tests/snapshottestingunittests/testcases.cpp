@@ -599,7 +599,7 @@ void Testcases::test_SnapshotTesting_saveSnapshots()
     SnapshotTesting::saveSnapshots();
 }
 
-void Testcases::test_SnapshotTesting_addClassIgnoredProperty()
+void Testcases::test_SnapshotTesting_addSystemIgnoreRule()
 {
     QString input = QtShell::realpath_strip(SRCDIR, "sample/Sample1.qml");
 
@@ -618,14 +618,14 @@ void Testcases::test_SnapshotTesting_addClassIgnoredProperty()
     text.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
 
-    SnapshotTesting::addClassIgnoredProperty("QQuickRectangle", "width");
+    SnapshotTesting::addSystemIgnoreRule("QQuickRectangle::width");
     name = QString("%1_set").arg(QTest::currentTestFunction());
 
     text = SnapshotTesting::capture(childItem);
     text.replace(QUrl::fromLocalFile(QString(SRCDIR)).toString(), "");
     QVERIFY(SnapshotTesting::matchStoredSnapshot(name, text));
 
-    SnapshotTesting::removeClassIgnoredProperty("QQuickRectangle", "width");
+    SnapshotTesting::removeSystemIgnoreRule("QQuickRectangle::width");
     name = QString("%1_default").arg(QTest::currentTestFunction());
 
     text = SnapshotTesting::capture(childItem);

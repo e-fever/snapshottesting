@@ -47,12 +47,7 @@ namespace SnapshotTesting {
     /// Compare the input snapshot and stored snapshot. Returns true if they are matched. Otherwise, it is fale. Unlike matchStoredSnapshot(), it won't trigger UI.
     bool tryMatchStoredSnapshot(const QString& name, const QString& snapshot);
 
-    void addClassIgnoredProperty(const QString &className , const QString& property);
+    void addSystemIgnoreRule(const QString& rule);
 
-    void removeClassIgnoredProperty(const QString &className , const QString& property);
-
-    void addComponentIgnoreProperty(const QString &componentName , const QString& package, const QString& property);
-
-    void removeComponentIgnoreProperty(const QString &componentName , const QString& package, const QString& property);
-
+    void removeSystemIgnoreRule(const QString& rule);
 }
