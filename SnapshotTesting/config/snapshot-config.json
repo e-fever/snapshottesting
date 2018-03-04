@@ -152,7 +152,17 @@
             ["QQuickMouseArea", "MouseArea"],
             ["QQuickImage", "Image"],
             ["QQuickItem", "Item"],
-            ["QQuickText", "Text"]
+            ["QQuickText", "Text"],
+            ["QQuickAnimatedImage", "AnimatedImage"],
+            ["QQuickBorderImage", "BorderImage"],
+            ["QQuickDropArea", "DropArea"],
+            ["QQuickFlickable", "Flickable"],
+            ["QQuickFocusScope", "FocusScope"],
+            ["QQuickGridView", "GridView"],
+            ["QQuickListView", "ListView"],
+            ["QQuickPinchArea", "PinchArea"],
+            ["QQuickRow", "Row"],
+            ["QQuickColumn", "Column"]
         ]
     },
     "rules": [
