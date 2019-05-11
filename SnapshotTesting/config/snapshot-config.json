@@ -30,7 +30,8 @@
     "QQuickRectangle": {
         "name": "Rectangle",
         "defaultValues": {
-            "radius": 0
+            "radius": 0,
+            "gradient": 0
         }
     },
     "QQuickText": {
@@ -145,6 +146,7 @@
         "Text@QtQuick::baselineOffset",
         "Text@QtQuick::implicitHeight",
         "Text@QtQuick::implicitWidth",
+        "Text@QtQuick::fontInfo",
         "Image@QtQuick::paintedHeight",
         "Image@QtQuick::paintedWidth",
         "Image@QtQuick::status",
