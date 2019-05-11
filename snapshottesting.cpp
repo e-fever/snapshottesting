@@ -89,7 +89,6 @@ static QMap<QString, PackageInfo> classNameToPackageInfo;
 /// #ObjectName::Property
 static QStringList systemIgnoreRules;
 
-
 #define DEHYDRATE_FONT(dest, property, original, current, field) \
     if (original.field() != current.field()) { \
         dest[property + "." + #field] = current.field(); \
@@ -1163,7 +1162,7 @@ static void init() {
         m_snapshotFile = QtShell::realpath_strip(QtShell::pwd(), "snapshots.json");
     }
 
-    {
+    auto loadHardCodedConfiguration = [=] {
         /* Configuration Loading */
 
     QString text = QtShell::cat(":/qt-project.org/imports/SnapshotTesting/config/snapshot-config.json");
@@ -1190,12 +1189,12 @@ static void init() {
         }
     }
 
-    forbiddenDataTypeList << qMetaTypeId<QQmlListProperty<QQuickItem>>()
+        forbiddenDataTypeList << qMetaTypeId<QQmlListProperty<QQuickItem>>()
                       << qMetaTypeId<QQmlListProperty<QObject>>()
                       << qMetaTypeId<QByteArray>()
                       << qMetaTypeId<void*>();
 
-        {
+        auto loadPackageInformation = [=]{
             /// Hard coded package information
             QVariantMap packages = map["packages"].toMap();
             auto keys = packages.keys();
@@ -1216,11 +1215,15 @@ static void init() {
             foreach (auto v, rules) {
                 systemIgnoreRules << v.toString();
             }
-        }
-    }
+        };
+
+        loadPackageInformation();
+    };
+
+    loadHardCodedConfiguration();
 
     /* Dynamic Configuration */
-    {
+    auto loadDynamicConfiguration = [=]() {
         QQmlEngine engine;
 
         {
@@ -1249,10 +1252,10 @@ static void init() {
             }
             object->deleteLater();
         }
-    }
+    };
 
+    loadDynamicConfiguration();
 }
-
 
 QString SnapshotTesting::diff(QString original, QString current)
 {
@@ -1590,7 +1593,8 @@ QStringList SnapshotTesting::Private::listContextUrls(QObject *object)
 
 QFuture<QImage> SnapshotTesting::Private::grabImage(QQuickItem *item)
 {
-    QSize size = QSize(item->width(), item->height());
+    QSize size = QSize(static_cast<int>(item->width()),
+                       static_cast<int>(item->height()));
     QSharedPointer<QQuickItemGrabResult> grabber = item->grabToImage(size);
 
     if (grabber.isNull()) {
@@ -1758,7 +1762,7 @@ QStringList SnapshotTesting::Private::findIgnorePropertyList(QObject *object, QM
 {
     const QMetaObject* meta = object->metaObject();
     QStringList result;
-    while (meta != 0) {
+    while (meta != nullptr) {
         QString className = meta->className();
         if (ignoreListForClasses.contains(className)) {
             QStringList list = ignoreListForClasses[className];
@@ -1828,7 +1832,7 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
     const QMetaObject* meta = object->metaObject();
     QMap<QString,bool> res;
 
-    while (meta != 0) {
+    while (meta != nullptr) {
         QString className = meta->className();
         classes << className;
         meta = meta->superClass();
@@ -1854,10 +1858,7 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
         qmlNamespace << QPair<QString,QString>(obtainComponentNameByBaseUrl(url), converToPackageNotation(url));
     }
 
-
-
     QRegularExpression classRule("(^[a-zA-Z0-9]*)::([a-zA-Z][a-zA-Z0-9]*$)");
-
     QRegularExpression packageRule("(^[a-zA-Z0-9]*)@([a-zA-Z0-9\\.]*)::([a-zA-Z][a-zA-Z0-9]*$)");
     QRegularExpression objectNameRule("^#([a-zA-Z0-9 ]*)::([a-zA-Z][a-zA-Z0-9]*$)");
 
@@ -1908,8 +1909,6 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
             }
             continue;
         }
-
-
     }
 
     return res;

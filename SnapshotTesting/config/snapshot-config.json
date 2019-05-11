@@ -25,30 +25,7 @@
             "x": 0,
             "y": 0,
             "z": 0
-        },
-        "ignoreProperties": [
-            "parent",
-            "transformOrigin",
-            "transitions",
-            "verticalCenter",
-            "visibleChildren",
-            "states",
-            "right",
-            "left",
-            "top",
-            "bottom",
-            "resources",
-            "transform",
-            "data",
-            "horizontalCenter",
-            "children",
-            "transformOriginPoint",
-            "childrenRect",
-            "status",
-            "baseline",
-            "focus",
-            "activeFocus"
-        ]
+        }
     },
     "QQuickRectangle": {
         "name": "Rectangle",
@@ -89,18 +66,7 @@
             "truncated": false,
             "verticalAlignment": 32,
             "wrapMode": 0
-        },
-        "ignoreProperties": [
-            "baselineOffset",
-            "implicitHeight",
-            "paintedHeight",
-            "paintedWidth",
-            "contentHeight",
-            "baseUrl",
-            "contentWidth",
-            "implicitWidth",
-            "fontInfo"
-        ]
+        }
     },
     "QQuickColumn": {
         "name" : "Column",
@@ -121,31 +87,15 @@
     "QQuickImage": {
         "defaultValues": {
             "source": ""
-        },
-        "ignoreProperties": [
-            "paintedHeight",
-            "paintedWidth"
-        ]
+        }
     },
     "QQuickButton": {
         "defaultValues": {
-        },
-        "ignoreProperties": [
-            "baselineOffset"
-        ]
+        }
     },
     "QQuickMouseArea": {
-        "ignoreProperties": [
-            "mouseX",
-            "mouseY"
-        ]
     },
     "RadioButton@QtQuick.Controls": {
-        "ignoreProperties": [
-            "implicitHeight",
-            "implicitWidth",
-            "baselineOffset"
-        ]
     },
     "packages": {
         "QtQuick": [
@@ -198,6 +148,7 @@
         "Image@QtQuick::paintedHeight",
         "Image@QtQuick::paintedWidth",
         "Image@QtQuick::status",
+        "MouseArea@QtQuick::mouseX",
         "RadioButton@QtQuick.Controls::implicitHeight",
         "RadioButton@QtQuick.Controls::implicitWidth",
         "RadioButton@QtQuick.Controls::baselineOffset"
