@@ -18,6 +18,7 @@ include(vendor/vendor.pri)
 include($$ROOTDIR/snapshottesting.pri)
 
 DISTFILES +=     qpm.json     \
+    ../../appveyor.yml \
     ../../qpm.json \
     packages/QtQuick_Items.qml \
     sample/red-100x100.png \
