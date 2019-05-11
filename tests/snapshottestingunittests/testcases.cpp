@@ -483,7 +483,7 @@ void Testcases::test_qml_loading()
 
     QQmlComponent comp(&engine);
     QString sourceCode = QtShell::cat(input);
-    auto url = QUrl(input);
+    auto url = QUrl::fromLocalFile(input);
 
     comp.setData(sourceCode.toUtf8(), url);
 
