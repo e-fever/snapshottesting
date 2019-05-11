@@ -7,6 +7,7 @@
 #include <QQuickItemGrabResult>
 #include <QQuickWindow>
 #include <QMetaObject>
+#include <underline.h>
 #include <aconcurrent.h>
 #include <private/qqmldata_p.h>
 #include <private/qqmlcontext_p.h>
@@ -598,6 +599,45 @@ void Testcases::test_isIgnoredProperty()
     };
 
     testButton_1_2();
+}
+
+void Testcases::createDefaultValuesConfig()
+{
+    /* @TODO - Migration Plan
+     * 1. Drop snapshot-config.json
+     * 2. Replace by snapshot-default-values.json to get hard coded default values
+     */
+
+    //@TODO - Migrate to the QRC
+    QString jsonFile = QtShell::realpath_strip(SRCDIR, "snapshot-default-values.json");
+    QString text = QtShell::cat(jsonFile);
+
+    auto defaultValuesConfig = _::parse(text);
+
+    auto appendDefaultValue = [&](QString component, QString package, int major, int minor) {
+        QQmlEngine engine;
+        QObject* object = createQmlComponent(&engine, component, package, major, minor);
+
+        QVariantMap properties;
+
+        auto ignoreRules = SnapshotTesting::systemIgnoreRules();
+        auto ignoreProperties = SnapshotTesting::Private::findIgnorePropertyList(object, ignoreRules).keys();
+
+        _::merge(properties, object);
+        properties = _::omit(properties, ignoreProperties);
+
+        QString name = QString("%1@%2").arg(component).arg(package);
+
+        defaultValuesConfig[name] = properties;
+    };
+
+    appendDefaultValue("MouseArea", "QtQuick", 2, 0);
+
+    QFile file(jsonFile);
+    QVERIFY(file.open(QIODevice::WriteOnly));
+
+    file.write(_::stringify(defaultValuesConfig, true).toUtf8());
+    file.close();
 }
 
 void Testcases::test_SnapshotTesting_diff()

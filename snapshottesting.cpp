@@ -87,7 +87,7 @@ static QMap<QString, PackageInfo> classNameToPackageInfo;
 /// Classname::Property
 /// ComponentName@Package::Property
 /// #ObjectName::Property
-static QStringList systemIgnoreRules;
+static QStringList s_systemIgnoreRules;
 
 #define DEHYDRATE_FONT(dest, property, original, current, field) \
     if (original.field() != current.field()) { \
@@ -645,7 +645,7 @@ static QVariantMap dehydrate(QObject* source, const SnapshotTesting::CaptureOpti
     };
 
     auto obtainIgnoreList = [=](QObject* object) {
-        return findIgnorePropertyList(object, systemIgnoreRules).keys();
+        return findIgnorePropertyList(object, s_systemIgnoreRules).keys();
     };
 
     auto _dehydrateFont = [=](QVariantMap& dest, QString property, QFont original , QFont current) {
@@ -1213,7 +1213,7 @@ static void init() {
             QVariantList rules = map["rules"].toList();
 
             foreach (auto v, rules) {
-                systemIgnoreRules << v.toString();
+                s_systemIgnoreRules << v.toString();
             }
         };
 
@@ -1917,20 +1917,26 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
 
 void SnapshotTesting::addSystemIgnoreRule(const QString &rule)
 {
-    int index = systemIgnoreRules.indexOf(rule);
+    int index = s_systemIgnoreRules.indexOf(rule);
 
     if (index < 0) {
-        systemIgnoreRules.append(rule);
+        s_systemIgnoreRules.append(rule);
     }
 }
 
 void SnapshotTesting::removeSystemIgnoreRule(const QString &rule)
 {
-    int index = systemIgnoreRules.indexOf(rule);
+    int index = s_systemIgnoreRules.indexOf(rule);
 
     if (index >= 0) {
-        systemIgnoreRules.removeAt(index);
+        s_systemIgnoreRules.removeAt(index);
     }
+}
+
+
+QStringList SnapshotTesting::systemIgnoreRules()
+{
+    return s_systemIgnoreRules;
 }
 
 Q_COREAPP_STARTUP_FUNCTION(init)

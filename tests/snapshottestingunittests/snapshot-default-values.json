@@ -1,0 +1,32 @@
+{
+    "MouseArea@QtQuick": {
+        "acceptedButtons": 1,
+        "activeFocusOnTab": false,
+        "antialiasing": false,
+        "baselineOffset": 0,
+        "clip": false,
+        "containsMouse": false,
+        "containsPress": false,
+        "cursorShape": 0,
+        "enabled": true,
+        "height": 0,
+        "hoverEnabled": false,
+        "objectName": "",
+        "opacity": 1,
+        "pressAndHoldInterval": 800,
+        "pressed": false,
+        "pressedButtons": 0,
+        "preventStealing": false,
+        "propagateComposedEvents": false,
+        "rotation": 0,
+        "scale": 1,
+        "scrollGestureEnabled": true,
+        "smooth": true,
+        "state": "",
+        "visible": true,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+    }
+}

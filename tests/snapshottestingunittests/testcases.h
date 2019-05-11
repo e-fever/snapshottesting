@@ -41,6 +41,10 @@ private slots:
 
     void test_isIgnoredProperty();
 
+    /* Data Generator */
+
+    void createDefaultValuesConfig();
+
     /* Public API */
 
     void test_SnapshotTesting_diff();

@@ -10,9 +10,7 @@
     "url": "git@github.com:e-fever/snapshottesting.git"
   },
   "version": {
-    "label": "0.0.24",
-    "revision": "",
-    "fingerprint": ""
+    "label": "0.0.24"
   },
   "dependencies": [
     "com.github.benlau.qtshell@0.4.5",
@@ -20,6 +18,5 @@
     "net.efever.aconcurrent@0.1.14"
   ],
   "license": "APACHE_2_0",
-  "pri_filename": "snapshottesting.pri",
-  "webpage": ""
+  "priFilename": "snapshottesting.pri"
 }
