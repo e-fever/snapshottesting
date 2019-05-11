@@ -1726,7 +1726,7 @@ QList<QQmlContext*> SnapshotTesting::Private::listOwnedContext(QObject* object) 
 
 QQmlContext *SnapshotTesting::Private::obtainBaseContext(QObject *object)
 {
-    QQmlContext* res = 0;
+    QQmlContext* res = nullptr;
 
     QList<QQmlContext*> list = listOwnedContext(object);
 
@@ -1854,15 +1854,16 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
         baseUrls << baseUrl;
     }
 
-    foreach (auto url, baseUrls) {
+    for (auto &url: baseUrls) {
         qmlNamespace << QPair<QString,QString>(obtainComponentNameByBaseUrl(url), converToPackageNotation(url));
     }
 
-    QRegularExpression classRule("(^[a-zA-Z0-9]*)::([a-zA-Z][a-zA-Z0-9]*$)");
-    QRegularExpression packageRule("(^[a-zA-Z0-9]*)@([a-zA-Z0-9\\.]*)::([a-zA-Z][a-zA-Z0-9]*$)");
-    QRegularExpression objectNameRule("^#([a-zA-Z0-9 ]*)::([a-zA-Z][a-zA-Z0-9]*$)");
+    QRegularExpression classRule("(^[a-zA-Z0-9]*)::([_a-zA-Z][_a-zA-Z0-9]*$)");
+    QRegularExpression packageRule("(^[a-zA-Z0-9]*)@([a-zA-Z0-9\\.]*)::([_a-zA-Z][_a-zA-Z0-9]*$)");
+    QRegularExpression objectNameRule("^#([a-zA-Z0-9 ]*)::([_a-zA-Z][_a-zA-Z0-9]*$)");
 
     foreach (auto rule, rules) {
+
         QRegularExpressionMatch match;
         match = classRule.match(rule);
 
@@ -1882,7 +1883,7 @@ QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *ob
             QString pkg = match.captured(2);
             QString prop = match.captured(3);
 
-            foreach (auto ns, qmlNamespace) {
+            for (auto &ns: qmlNamespace) {
                 if (comp != ns.first) {
                     continue;
                 }

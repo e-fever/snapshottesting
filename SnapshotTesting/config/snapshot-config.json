@@ -151,6 +151,12 @@
         "Image@QtQuick::paintedWidth",
         "Image@QtQuick::status",
         "MouseArea@QtQuick::mouseX",
+        "Button@QtQuick.Controls::__effectivePressed",
+        "Button@QtQuick.Controls::__iconOverriden",
+        "Button@QtQuick.Controls::__position",
+        "Button@QtQuick.Controls::activeFocusOnPress",
+        "Button@QtQuick.Controls::activeFocusOnTab",
+        "Button@QtQuick.Controls::baselineOffset",
         "RadioButton@QtQuick.Controls::implicitHeight",
         "RadioButton@QtQuick.Controls::implicitWidth",
         "RadioButton@QtQuick.Controls::baselineOffset"

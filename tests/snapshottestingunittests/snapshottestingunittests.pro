@@ -21,6 +21,7 @@ DISTFILES +=     qpm.json     \
     ../../appveyor.yml \
     ../../qpm.json \
     packages/QtQuick_Items.qml \
+    packages/QtQuick_controls_1_2_items.qml \
     sample/red-100x100.png \
     sample/Sample1.qml \
     sample/Sample2.qml \

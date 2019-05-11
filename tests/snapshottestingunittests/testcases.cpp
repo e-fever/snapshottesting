@@ -77,7 +77,6 @@ void Testcases::test_classNameToComponentName()
         QCOMPARE(classNameToComponentName(object->metaObject()->className()), QString("Canvas"));
         object->deleteLater();
     }
-
 }
 
 void Testcases::test_context()
@@ -483,7 +482,10 @@ void Testcases::test_qml_loading()
     engine.addImportPath("qrc:///");
 
     QQmlComponent comp(&engine);
-    comp.loadUrl(QUrl(input));
+    QString sourceCode = QtShell::cat(input);
+    auto url = QUrl(input);
+
+    comp.setData(sourceCode.toUtf8(), url);
 
     if (comp.isError()) {
         qDebug() << QString("%1 : Load Failed. Reason :  %2").arg(input).arg(comp.errorString());
@@ -570,7 +572,7 @@ void Testcases::test_isIgnoredProperty()
         QQuickItem* sample1 = qobject_cast<QQuickItem*>(component.create());
         QVERIFY(sample1);
         auto items = sample1->childItems();
-        QQuickItem* text = 0;
+        QQuickItem* text = nullptr;
 
         for (auto item: items) {
             if (QString(item->metaObject()->className()) == "QQuickText") {
@@ -582,6 +584,20 @@ void Testcases::test_isIgnoredProperty()
         QVERIFY(text);
         QCOMPARE(isIgnoredProperty(text, "baseUrl", rules), true);
     }
+
+    auto testButton_1_2 = [=]() {
+        QQmlApplicationEngine engine;
+
+        QObject* object = createQmlComponent(&engine, "Button", "QtQuick.Controls", 1, 2);
+
+        auto rules = QStringList{"Button@QtQuick.Controls::__effectivePressed"};
+
+        QCOMPARE(isIgnoredProperty(object, "__effectivePressed", rules), true);
+
+        object->deleteLater();
+    };
+
+    testButton_1_2();
 }
 
 void Testcases::test_SnapshotTesting_diff()
