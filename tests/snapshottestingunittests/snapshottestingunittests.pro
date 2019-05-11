@@ -20,6 +20,7 @@ include($$ROOTDIR/snapshottesting.pri)
 DISTFILES +=     qpm.json     \
     ../../appveyor.yml \
     ../../qpm.json \
+    README.md \
     packages/QtQuick_Items.qml \
     packages/QtQuick_controls_1_2_items.qml \
     sample/red-100x100.png \

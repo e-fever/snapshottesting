@@ -117,6 +117,8 @@
         ]
     },
     "rules": [
+        "Item@QtQuick::implicitWidth",
+        "Item@QtQuick::implicitHeight",
         "Item@QtQuick::childrenRect",
         "Item@QtQuick::parent",
         "Item@QtQuick::transformOrigin",
@@ -157,8 +159,6 @@
         "Button@QtQuick.Controls::activeFocusOnPress",
         "Button@QtQuick.Controls::activeFocusOnTab",
         "Button@QtQuick.Controls::baselineOffset",
-        "RadioButton@QtQuick.Controls::implicitHeight",
-        "RadioButton@QtQuick.Controls::implicitWidth",
         "RadioButton@QtQuick.Controls::baselineOffset"
     ]
 }
