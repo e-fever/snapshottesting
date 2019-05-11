@@ -19,6 +19,7 @@ include($$ROOTDIR/snapshottesting.pri)
 
 DISTFILES +=     qpm.json     \
     ../../qpm.json \
+    packages/QtQuick_Items.qml \
     sample/red-100x100.png \
     sample/Sample1.qml \
     sample/Sample2.qml \

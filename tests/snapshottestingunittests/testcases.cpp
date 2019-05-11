@@ -714,7 +714,7 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot()
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot_data()
 {
-    scanSamples();
+    scanQmlFiles();
 }
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot_expandAll()
@@ -744,7 +744,7 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_expandAll()
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot_expandAll_data()
 {
-    scanSamples();
+    scanQmlFiles();
 }
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot_hideId()
@@ -774,7 +774,7 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_hideId()
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot_hideId_data()
 {
-    scanSamples();
+    scanQmlFiles();
 }
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
@@ -804,7 +804,7 @@ void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot()
 
 void Testcases::test_SnapshotTesting_matchStoredSnapshot_screenshot_data()
 {
-    scanSamples();
+    scanQmlFiles();
 }
 
 void Testcases::test_SnapshotTesting_createTest()
@@ -834,16 +834,19 @@ void Testcases::test_SnapshotTesting_createTest()
 
 void Testcases::test_SnapshotTesting_createTest_data()
 {
-    scanSamples();
+    scanQmlFiles();
 }
 
-void Testcases::scanSamples()
+void Testcases::scanQmlFiles()
 {
     QTest::addColumn<QString>("input");
 
     QStringList files = QtShell::find(QtShell::realpath_strip(SRCDIR, "sample"), "*.qml");
 
+    files.append(QtShell::find(QtShell::realpath_strip(SRCDIR, "packages"), "*.qml"));
+
     foreach (QString file, files) {
         QTest::newRow(file.toUtf8().constData()) << file;
     }
 }
+;

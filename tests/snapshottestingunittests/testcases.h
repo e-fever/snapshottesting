@@ -69,7 +69,7 @@ private slots:
     void test_SnapshotTesting_createTest_data();
 
 private:
-    void scanSamples();
+    void scanQmlFiles();
 };
 
 #endif // SNAPSHOTTESTS_H
