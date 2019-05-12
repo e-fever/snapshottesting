@@ -38,8 +38,8 @@ SnapshotTesting::Renderer::Renderer(QQmlEngine* engine) : m_engine(engine)
     surface->setFormat(format);
     surface->create();
 
-    m_item = 0;
-    fbo = 0;
+    m_item = nullptr;
+    fbo = nullptr;
 }
 
 SnapshotTesting::Renderer::~Renderer()
@@ -103,7 +103,7 @@ bool SnapshotTesting::Renderer::load(const QString &source)
         auto updateGeom = [=]() {
             qreal width = rootItem->width();
             qreal height = rootItem->height();
-            if (width == 0 || height == 0) {
+            if (width == 0.0 || height == 0.0) {
                 width = 10;
                 height = 10;
             }
@@ -163,7 +163,7 @@ QImage SnapshotTesting::Renderer::grabScreenshot()
 {
     QQuickItem* quickItem = qobject_cast<QQuickItem*>(m_item);
 
-    if (!quickItem || quickItem->width() == 0 || quickItem->height() == 0) {
+    if (!quickItem || quickItem->width() == 0.0 || quickItem->height() == 0.0) {
         return QImage();
     }
 

@@ -29,6 +29,7 @@ DISTFILES +=     qpm.json     \
     sample/Sample3.qml \
     sample/Sample4.qml \
     qmltests/tst_SnapshotTesting.qml \
+    snapshot-default-values.json \
     snapshots.json \
     ../../README.md \
     ../../.travis.yml \

@@ -1814,15 +1814,6 @@ QString SnapshotTesting::replaceLines(const QString &input, QRegExp regexp, QStr
     return token.join("\n");
 }
 
-
-
-bool SnapshotTesting::Private::isIgnoredProperty(QObject *object, const QString &property, const QStringList &rules)
-{
-    QMap<QString,bool> properties = findIgnorePropertyList(object, rules);
-    return properties.contains(property);
-}
-
-
 QMap<QString, bool> SnapshotTesting::Private::findIgnorePropertyList(QObject *object, const QStringList &rules)
 {
     QStringList classes;

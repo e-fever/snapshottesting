@@ -1,4 +1,23 @@
 {
+    "Item@QtQuick": {
+        "activeFocusOnTab": false,
+        "antialiasing": false,
+        "baselineOffset": 0,
+        "clip": false,
+        "enabled": true,
+        "height": 0,
+        "objectName": "",
+        "opacity": 1,
+        "rotation": 0,
+        "scale": 1,
+        "smooth": true,
+        "state": "",
+        "visible": true,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+    },
     "MouseArea@QtQuick": {
         "acceptedButtons": 1,
         "activeFocusOnTab": false,

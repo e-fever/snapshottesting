@@ -20,6 +20,7 @@
 using namespace QtShell;
 using namespace SnapshotTesting;
 using namespace SnapshotTesting::Private;
+using namespace SnapshotTesting::Private::Rule;
 
 Testcases::Testcases(QObject *parent) : QObject(parent)
 {
@@ -631,7 +632,9 @@ void Testcases::createDefaultValuesConfig()
         defaultValuesConfig[name] = properties;
     };
 
+    appendDefaultValue("Item", "QtQuick", 2, 0);
     appendDefaultValue("MouseArea", "QtQuick", 2, 0);
+//    appendDefaultValue("Button", "QtQuick.Controls", 1, 2);
 
     QFile file(jsonFile);
     QVERIFY(file.open(QIODevice::WriteOnly));

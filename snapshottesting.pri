@@ -19,4 +19,5 @@ SOURCES += \
     $$PWD/snapshottesting.cpp \
     $$PWD/snapshottestingadapter.cpp \
     $$PWD/snapshottestingrenderer.cpp \
+    $$PWD/snapshottestingrule.cpp \
     $$PWD/snapshottestingtest.cpp
