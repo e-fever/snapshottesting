@@ -52,4 +52,6 @@ namespace SnapshotTesting {
     void removeSystemIgnoreRule(const QString& rule);
 
     QStringList systemIgnoreRules();
+
+    void init();
 }

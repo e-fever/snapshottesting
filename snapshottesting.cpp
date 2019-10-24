@@ -1156,7 +1156,7 @@ bool SnapshotTesting::matchStoredSnapshot(const QString &name, const QString &sn
     return false;
 }
 
-static void init() {
+void SnapshotTesting::init() {
     qRegisterMetaType<SnapshotTesting::Private::EnumString>();
     if (m_snapshotFile.isNull()) {
         m_snapshotFile = QtShell::realpath_strip(QtShell::pwd(), "snapshots.json");
